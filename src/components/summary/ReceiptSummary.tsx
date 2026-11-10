@@ -6,17 +6,12 @@ import { formatCurrency } from '@/lib/calculator';
 import confetti from 'canvas-confetti';
 import { RoundingLottery } from './RoundingLottery';
 import {
-  CheckCircle2,
-  Copy,
   Check,
   Printer,
   Share2,
-  Receipt,
-  Sparkles,
   ChevronDown,
   ChevronUp,
   AlertTriangle,
-  RotateCcw,
 } from 'lucide-react';
 
 export function ReceiptSummary() {
@@ -53,7 +48,7 @@ export function ReceiptSummary() {
 
   // Generate formatted text for WhatsApp / Telegram
   const generateMessageText = () => {
-    let msg = `🧾 *BETSUBETSU BILL BREAKDOWN*\n`;
+    let msg = `🧾 *ASINGASING BILL BREAKDOWN*\n`;
     msg += `Total Bill: *${formatCurrency(calculation.targetGrandTotal, currency)}*\n`;
     msg += `--------------------------------\n\n`;
 
@@ -80,7 +75,7 @@ export function ReceiptSummary() {
     if (calculation.roundingWinnerId && calculation.roundingTotal !== undefined && calculation.roundingTotal !== 0) {
       const winner = participants.find((p) => p.id === calculation.roundingWinnerId);
       if (winner) {
-        msg += `🎲 *Hasū-Kuji (Rounding Fate):* ${winner.name} absorbed the ${calculation.roundingTotal > 0 ? '+' : ''}${formatCurrency(calculation.roundingTotal, currency)} rounding adjustment!\n\n`;
+        msg += `🎲 *Rounding Fate:* ${winner.name} absorbed the ${calculation.roundingTotal > 0 ? '+' : ''}${formatCurrency(calculation.roundingTotal, currency)} rounding adjustment!\n\n`;
       }
     }
 
@@ -88,7 +83,7 @@ export function ReceiptSummary() {
       msg += `💳 *Payment Details:*\n${paymentNote.trim()}\n\n`;
     }
 
-    msg += `✓ *Split proportionally with BetsuBetsu (Exact Cent Balanced)*`;
+    msg += `✓ *Split proportionally with AsingAsing (Exact Cent Balanced)*`;
     return msg;
   };
 
@@ -120,7 +115,7 @@ export function ReceiptSummary() {
       {/* Dedicated Print / PDF Header */}
       <div className="hidden print:flex items-center justify-between pb-3 mb-1 border-b-2 border-[#1C1917]">
         <div>
-          <h1 className="text-xl font-bold font-serif text-[#1C1917]">BetsuBetsu (別々)</h1>
+          <h1 className="text-xl font-bold font-serif text-[#1C1917]">AsingAsing (Asing-Asing)</h1>
           <p className="text-xs text-[#57534E] font-mono">Restaurant Bill Settlement Slip</p>
         </div>
         <div className="text-right text-xs font-mono text-[#57534E]">
@@ -226,16 +221,15 @@ export function ReceiptSummary() {
           return (
             <div
               key={p.id}
-              className={`bg-white rounded-2xl border shadow-xs transition-all overflow-hidden flex flex-col justify-between print-break-inside-avoid print:border-[#D9CDB8] ${
-                b.isLotteryWinner ? 'border-[#C53030]/60 ring-1 ring-[#C53030]/20' : 'border-[#E5DDCF] hover:border-[#C4B9A7]'
-              }`}
+              className={`bg-white rounded-2xl border shadow-xs transition-all overflow-hidden flex flex-col justify-between print-break-inside-avoid print:border-[#D9CDB8] ${b.isLotteryWinner ? 'border-[#C53030]/60 ring-1 ring-[#C53030]/20' : 'border-[#E5DDCF] hover:border-[#C4B9A7]'
+                }`}
             >
               <div className="p-4 space-y-3 print:p-3">
                 {/* Participant Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div
-                      className="w-8 h-8 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-xs print:w-6 print:h-6 print:text-[10px]"
+                      className="w-8 h-8 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-xs print:w-6 print:h-6 print:text-xs"
                       style={{ backgroundColor: p.color }}
                     >
                       {p.avatarLetter}
@@ -243,11 +237,6 @@ export function ReceiptSummary() {
                     <div>
                       <div className="flex items-center gap-1.5">
                         <h4 className="text-sm font-bold text-[#1C1917]">{p.name}</h4>
-                        {b.isLotteryWinner && (
-                          <span className="stamp-badge text-[9px] text-[#C53030] bg-[#FDF2F2] border border-[#F5C2C2] px-1.5 py-0.2">
-                            運 FATE
-                          </span>
-                        )}
                       </div>
                       <p className="text-xs text-[#78716C] font-mono">
                         {b.items.length} item{b.items.length === 1 ? '' : 's'} consumed
@@ -272,17 +261,20 @@ export function ReceiptSummary() {
                     </span>
                   </div>
 
-                  {b.feeShares.map((fs) => (
-                    <div key={fs.feeId} className="flex justify-between text-[#78716C]">
-                      <span>{fs.feeName}:</span>
-                      <span className={`font-semibold tabular-numbers ${fs.isDiscount ? 'text-[#C53030]' : 'text-[#1C1917]'}`}>
-                        {fs.isDiscount ? '-' : '+'}
-                        {formatCurrency(fs.amount, currency)}
-                      </span>
-                    </div>
-                  ))}
+                  {b.feeShares.map((fs) => {
+                    if (Math.abs(fs.amount) < 0.005) return null;
+                    return (
+                      <div key={fs.feeId} className="flex justify-between text-[#78716C]">
+                        <span>{fs.feeName}:</span>
+                        <span className={`font-semibold tabular-numbers ${fs.isDiscount ? 'text-[#C53030]' : 'text-[#1C1917]'}`}>
+                          {fs.isDiscount ? '-' : '+'}
+                          {formatCurrency(fs.amount, currency)}
+                        </span>
+                      </div>
+                    );
+                  })}
 
-                  {b.centsAdjustment !== 0 && (
+                  {Math.abs(b.centsAdjustment) >= 0.005 && (
                     <div className="flex justify-between text-xs text-[#78716C] italic pt-0.5 border-t border-[#E5DDCF]">
                       <span>Penny Closure Adjustment:</span>
                       <span className="tabular-numbers">
@@ -307,9 +299,8 @@ export function ReceiptSummary() {
                     </button>
 
                     <div
-                      className={`mt-2 space-y-1 pt-2 border-t border-[#F3ECE1] text-xs font-mono ${
-                        isExpanded ? 'block' : 'hidden print:block'
-                      }`}
+                      className={`mt-2 space-y-1 pt-2 border-t border-[#F3ECE1] text-xs font-mono ${isExpanded ? 'block' : 'hidden print:block'
+                        }`}
                     >
                       {b.items.map((it, idx) => (
                         <div key={idx} className="flex justify-between text-[#57534E]">
@@ -344,7 +335,7 @@ export function ReceiptSummary() {
           type="text"
           value={paymentNote}
           onChange={(e) => setPaymentNote(e.target.value)}
-          placeholder="e.g. Venmo @your-handle or PayNow / Zelle to 9123-4567"
+          placeholder="e.g. QR Me"
           className="w-full bg-[#FAF7F2] border border-[#D9CDB8] rounded-xl px-3 py-2 text-xs text-[#1C1917] placeholder:text-[#A8A29E] focus:bg-white focus:border-[#1C1917] outline-none"
         />
 
@@ -368,7 +359,7 @@ export function ReceiptSummary() {
       {/* Printable Payment Note (Visible in print/PDF only when filled) */}
       {paymentNote.trim() && (
         <div className="hidden print:block bg-[#FAF7F2] border border-[#D9CDB8] rounded-xl p-3 text-xs font-mono space-y-1 print-break-inside-avoid">
-          <span className="font-bold text-[#1C1917] uppercase tracking-wider text-[10px] block">
+          <span className="font-bold text-[#1C1917] uppercase tracking-wider text-xs block">
             Payment Instructions
           </span>
           <p className="text-[#57534E] leading-relaxed">{paymentNote.trim()}</p>
@@ -376,8 +367,8 @@ export function ReceiptSummary() {
       )}
 
       {/* Printable Slip Footer */}
-      <div className="hidden print:flex items-center justify-between pt-3 border-t border-[#D9CDB8] text-[10px] font-mono text-[#78716C] print-break-inside-avoid">
-        <span>BetsuBetsu (別々) • Proportional Bill Settlement</span>
+      <div className="hidden print:flex items-center justify-between pt-3 border-t border-[#D9CDB8] text-xs font-mono text-[#78716C] print-break-inside-avoid">
+        <span>AsingAsing • Proportional Bill Settlement</span>
         <span>Exact Cent Balanced ✓</span>
       </div>
     </div>

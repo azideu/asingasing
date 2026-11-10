@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-11-10T10:35:10.000Z",
-  "title": "Design System: BetsuBetsu",
+  "title": "Design System: AsingAsing",
   "extensions": {
     "colorMeta": {
       "primary": {
@@ -188,7 +188,7 @@
   ],
   "narrative": {
     "northStar": "The Thermal Ledger",
-    "overview": "BetsuBetsu evokes the tactile intimacy and quiet precision of a Japanese restaurant slip printed on thermal paper. It is grounded in the tradition of betsu-betsu (paying separately), transforming the friction of bill calculation into an honest, tangible ritual. The aesthetic avoids cold corporate SaaS tropes and gaudy fintech gradients, choosing instead warm washi paper backgrounds, deep sumi charcoal ink, tactile paper creases, and perforated ticket details.\n\nThe density is calibrated for hurried tabletop ergonomics on mobile screens under restaurant lighting. Financial data is displayed with ledger-like rigor: monospace tabular figures ensure numbers align down columns, while delicate paper-crease dividers demarcate stages. Color is applied with intentional restraint—deep charcoal and paper hues carry the structural weight, while scarlet hanko stamps and matcha seals signify verification and mathematical closure.",
+    "overview": "AsingAsing evokes the tactile intimacy and quiet precision of a restaurant slip printed on thermal paper. It is grounded in the tradition of paying separately (asing-asing), transforming the friction of bill calculation into an honest, tangible ritual. The aesthetic avoids cold corporate SaaS tropes and gaudy fintech gradients, choosing instead warm washi paper backgrounds, deep sumi charcoal ink, tactile paper creases, and perforated ticket details.\n\nThe density is calibrated for hurried tabletop ergonomics on mobile screens under restaurant lighting. Financial data is displayed with ledger-like rigor: monospace tabular figures ensure numbers align down columns, while delicate paper-crease dividers demarcate stages. Color is applied with intentional restraint—deep charcoal and paper hues carry the structural weight, while scarlet hanko stamps and matcha seals signify verification and mathematical closure.",
     "keyCharacteristics": [
       "Tactile Paper Materiality: Natural washi tone (#FAF7F2) paired with pure paper cards (#FFFFFF) and muted parchment (#F3ECE1).",
       "Sumi & Hanko Palette: Rich charcoal typography punctuated by red stamp alerts and green balance seals.",

@@ -12,7 +12,7 @@ Social diners and group meal organizers (friends, colleagues, families) splittin
 
 ## Product Purpose
 
-BetsuBetsu (別々) provides fast, mathematically fair, and privacy-preserving restaurant bill splitting. It allows organizers to snap a receipt photo or paste receipt text, extract items directly in the browser via client-side OCR without uploading images to any server, adjust items and extra fees, assign dishes (individually, to subsets, or table-wide), calculate exact proportional taxes, service charges, and rounding, and share clean breakdowns instantly over messaging apps. Success is settling the bill in under 60 seconds with complete transparency and zero rounding disputes.
+AsingAsing (Asing-Asing) provides fast, mathematically fair, and privacy-preserving restaurant bill splitting. It allows organizers to snap a receipt photo or paste receipt text, extract items directly in the browser via client-side OCR without uploading images to any server, adjust items and extra fees, assign dishes (individually, to subsets, or table-wide), calculate exact proportional taxes, service charges, and rounding, and share clean breakdowns instantly over messaging apps. Success is settling the bill in under 60 seconds with complete transparency and zero rounding disputes.
 
 ## Positioning
 
@@ -37,7 +37,7 @@ BetsuBetsu (別々) provides fast, mathematically fair, and privacy-preserving r
 
 ## Brand Commitments
 
-- **Name**: BetsuBetsu (別々) — Japanese idiom for "separately / each paying their own share".
+- **Name**: AsingAsing (Asing-Asing) — Malay idiom for "separately / each paying their own share".
 - **Voice & Tone**: Calm, precise, trustworthy, transparent, and hassle-free. Numbers must always feel mathematically accountable and effortless to verify.
 
 ## Evidence on Hand

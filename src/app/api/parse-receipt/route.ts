@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LineItem, ExtraFee } from '@/types/receipt';
+import { LineItem, ExtraFee, normalizeFeeWithPresets } from '@/types/receipt';
 
 interface GeminiParsedResponse {
   items?: Array<{
@@ -13,6 +13,7 @@ interface GeminiParsedResponse {
     name: string;
     type?: 'percent' | 'fixed';
     value?: number;
+    printedAmount?: number;
     appliesTo?: 'subtotal' | 'subtotal_plus_service';
     isDiscount?: boolean;
   }>;
@@ -36,7 +37,7 @@ Return a strict JSON object with:
   ],
   "fees": [
     {
-      "name": "Service Charge (10%)",
+      "name": "Service Charge",
       "type": "percent", // or "fixed"
       "value": 10,
       "appliesTo": "subtotal", // or "subtotal_plus_service"
@@ -55,11 +56,24 @@ Rules:
    - "unitPrice": Numerical unit price. If only line total is given, calculate total / qty.
    - "totalPrice": Numerical line total.
    - Do NOT include taxes, service charges, discounts, or subtotal lines as food items.
+   - ZERO-PRICED ITEMS & MODIFIERS:
+     * NEVER parse items worth 0 or 0.00 as standalone line items.
+     * If a 0.00 line is a preparation choice or kitchen modifier (e.g. "Less Ice", "Medium Rare", "No Coriander", "Dine In", "Warm Water") belonging to a dish/drink, attach it to that dish's "notes" property instead of creating a separate item.
+     * Ignore standalone zero-priced items, complimentary items (e.g. "Complimentary Mint 0.00"), or promotional zero lines entirely.
 3. For extra fees & charges:
-   - SST / GST / Service Tax: extract percentage or fixed amount.
-   - Service Charge (e.g. 10%): extract percentage or fixed amount.
-   - Rounding adjustment: e.g. -0.02 or +0.03. Mark isDiscount: true if negative.
-   - Discounts or vouchers: Mark isDiscount: true.
+   Normalize fee names and compounding rules to strictly follow these standard presets:
+   - 10% Service Charge: name "Service Charge", type "percent", value 10, appliesTo "subtotal" (normalize raw labels like "ServiceCrg 10%", "SVC 10%", "SC 10%")
+   - 6% SST / Service Tax: name "SST (6%)", appliesTo "subtotal_plus_service" (normalize raw labels like "Servce Tax 6%", "Gov Tax 6%", "SST 6%")
+   - 8% SST / Service Tax: name "SST (8%)", appliesTo "subtotal_plus_service"
+   - 9% GST: name "GST (9%)", appliesTo "subtotal_plus_service"
+   - 10% Discount: name "10% Discount", type "percent", value 10, appliesTo "subtotal", isDiscount: true
+   - 15% Tip: name "Tip (15%)", type "percent", value 15, appliesTo "subtotal"
+   - EXACT PRINTED FIGURES: If a fee line on the receipt prints an explicit currency amount (e.g. "(Servce Tax 6%  10.25)"), include "printedAmount": 10.25 and set type: "fixed", value: 10.25 so the fee matches the physical receipt figure instead of deviating due to tax-exempt items.
+   - INCLUSIVE TAXES: If a tax is enclosed in parentheses (e.g. "(Servce Tax 6% 10.25)") AND the receipt grand total shows that the tax is already included in the food subtotal, do NOT add it as an extra fee.
+   - In restaurant dining (e.g. Malaysia, Singapore), Government Service Tax / SST / GST is calculated on (Subtotal + Service Charge), so appliesTo MUST be "subtotal_plus_service".
+   - Service Charge is calculated on subtotal, so appliesTo MUST be "subtotal".
+   - Rounding adjustment: e.g. -0.02 or +0.03. Name "Rounding Adjustment", type "fixed". Mark isDiscount: true if negative.
+   - Other discounts or vouchers: Mark isDiscount: true.
 4. "subtotal": numerical sum of items before taxes/fees.
 5. "grandTotal": final net payable amount printed on the receipt.
 6. Return valid JSON only, without markdown fences or additional conversational text.`;
@@ -171,34 +185,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert items to LineItem[]
+    // Convert items to LineItem[], strictly filtering out zero-priced items
     const now = Date.now();
-    const items: LineItem[] = (parsed.items || []).map((it, idx) => {
-      const qty = Math.max(1, Math.round(Number(it.qty) || 1));
-      const totalPrice = Number(it.totalPrice) || (Number(it.unitPrice) || 0) * qty;
-      const unitPrice = Number(it.unitPrice) || (totalPrice / qty);
+    const items: LineItem[] = (parsed.items || [])
+      .filter((it) => {
+        const qty = Math.max(1, Math.round(Number(it.qty) || 1));
+        const totalPrice = Number(it.totalPrice) || (Number(it.unitPrice) || 0) * qty;
+        // Omit items with total price 0 or negative
+        return totalPrice > 0;
+      })
+      .map((it, idx) => {
+        const qty = Math.max(1, Math.round(Number(it.qty) || 1));
+        const totalPrice = Number(it.totalPrice) || (Number(it.unitPrice) || 0) * qty;
+        const unitPrice = Number(it.unitPrice) || (totalPrice / qty);
 
-      return {
-        id: `item-${now}-${idx}`,
-        name: it.name?.trim() || `Item #${idx + 1}`,
-        qty,
-        unitPrice: Math.round(unitPrice * 100) / 100,
-        totalPrice: Math.round(totalPrice * 100) / 100,
-        assignedTo: [],
-        notes: it.notes?.trim() || undefined,
-      };
-    });
+        return {
+          id: `item-${now}-${idx}`,
+          name: it.name?.trim() || `Item #${idx + 1}`,
+          qty,
+          unitPrice: Math.round(unitPrice * 100) / 100,
+          totalPrice: Math.round(totalPrice * 100) / 100,
+          assignedTo: [],
+          notes: it.notes?.trim() || undefined,
+        };
+      });
 
-    // Convert fees to ExtraFee[]
-    const fees: ExtraFee[] = (parsed.fees || []).map((fee, idx) => {
-      const val = Math.abs(Number(fee.value) || 0);
+    // Convert fees to ExtraFee[] and normalize against preset rules
+    const fees: ExtraFee[] = (parsed.fees || []).map((rawFee, idx) => {
+      const normalized = normalizeFeeWithPresets(rawFee);
       return {
         id: `fee-${now}-${idx}`,
-        name: fee.name?.trim() || `Fee #${idx + 1}`,
-        type: fee.type === 'percent' ? 'percent' : 'fixed',
-        value: val,
-        appliesTo: fee.appliesTo === 'subtotal_plus_service' ? 'subtotal_plus_service' : 'subtotal',
-        isDiscount: fee.isDiscount === true,
+        name: normalized.name,
+        type: normalized.type,
+        value: normalized.value,
+        appliesTo: normalized.appliesTo,
+        isDiscount: normalized.isDiscount,
       };
     });
 

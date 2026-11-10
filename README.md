@@ -1,6 +1,6 @@
-# BetsuBetsu (別々)
+# AsingAsing
 
-BetsuBetsu is a mobile-first web app for splitting restaurant bills. It scans receipt photos in your browser, lets you fix misread items, and splits shared dishes among people while dividing tax, service charge, and tips in proportion to what each person spent.
+AsingAsing is a mobile-first web app for splitting restaurant bills. It scans receipt photos in your browser, lets you fix misread items, and splits shared dishes among people while dividing tax, service charge, and tips in proportion to what each person spent.
 
 ---
 

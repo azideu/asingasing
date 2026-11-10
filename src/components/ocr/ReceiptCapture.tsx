@@ -19,7 +19,7 @@ import {
   Cpu,
 } from 'lucide-react';
 
-const GEMINI_LOCAL_KEY = 'betsubetsu_gemini_key';
+const GEMINI_LOCAL_KEY = 'asingasing_gemini_key';
 
 export function ReceiptCapture() {
   const {
@@ -52,7 +52,7 @@ export function ReceiptCapture() {
   const [customApiKey, setCustomApiKey] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       try {
-        return localStorage.getItem(GEMINI_LOCAL_KEY) || '';
+        return localStorage.getItem(GEMINI_LOCAL_KEY) || localStorage.getItem('betsubetsu_gemini_key') || '';
       } catch {
         return '';
       }
@@ -324,21 +324,8 @@ export function ReceiptCapture() {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-8">
-      {/* Introduction Banner & Status Pill */}
+      {/* Introduction Banner */}
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 bg-[#FAF7F2] border border-[#E5DDCF] px-3.5 py-1.5 rounded-full text-xs text-[#57534E]">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-medium text-[#1C1917]">Gemini Vision AI Ready</span>
-          <span className="text-[#A8A29E]">•</span>
-          <button
-            onClick={() => setShowKeyModal(true)}
-            className="text-xs font-semibold text-[#1C1917] hover:underline cursor-pointer inline-flex items-center gap-1"
-          >
-            <KeyRound className="w-3 h-3" />
-            {customApiKey ? 'Custom Key Set' : 'Configure Key'}
-          </button>
-        </div>
-
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] font-serif">
           Capture &amp; Parse Receipt
         </h2>
@@ -470,7 +457,7 @@ export function ReceiptCapture() {
 
                 <div className="relative flex py-1 items-center">
                   <div className="flex-grow border-t border-[#E5DDCF]" />
-                  <span className="flex-shrink mx-3 text-[11px] text-[#A8A29E] uppercase tracking-wider">
+                  <span className="flex-shrink mx-3 text-xs text-[#78716C] font-mono uppercase tracking-wider">
                     Or alternative methods
                   </span>
                   <div className="flex-grow border-t border-[#E5DDCF]" />
@@ -685,7 +672,7 @@ export function ReceiptCapture() {
             <div className="p-5 space-y-4">
               <div className="space-y-1.5 text-xs text-[#57534E]">
                 <p>
-                  By default, BetsuBetsu uses the server-configured Gemini API key.
+                  By default, AsingAsing uses the server-configured Gemini API key.
                 </p>
                 <p>
                   You can also enter your own free key from{' '}
@@ -716,7 +703,7 @@ export function ReceiptCapture() {
 
               <div className="flex items-center gap-2 pt-2 border-t border-[#E5DDCF]">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <p className="text-[11px] text-[#78716C]">
+                <p className="text-xs text-[#78716C]">
                   Free tier: 1,500 scans/day. No credit card required.
                 </p>
               </div>

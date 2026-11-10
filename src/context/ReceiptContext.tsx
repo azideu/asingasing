@@ -56,7 +56,7 @@ interface ReceiptContextType {
 
 const ReceiptContext = createContext<ReceiptContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'betsubetsu_session_v4';
+const STORAGE_KEY = 'asingasing_session_v1';
 
 export const CURATED_COLORS = [
   '#2563EB', // Blue
@@ -92,7 +92,7 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
   // Hydrate from localStorage on client mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('betsubetsu_session_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -135,6 +135,14 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
   const calculation = useMemo(() => {
     return calculateReceiptSplit(items, fees, participants, targetGrandTotal, roundingWinnerId);
   }, [items, fees, participants, targetGrandTotal, roundingWinnerId]);
+
+  // If rounding fees are removed and rounding total is zero, automatically clear lottery winner
+  useEffect(() => {
+    if (roundingWinnerId && (!calculation.roundingTotal || Math.abs(calculation.roundingTotal) < 0.005)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRoundingWinnerId(null);
+    }
+  }, [roundingWinnerId, calculation.roundingTotal]);
 
   const addItem = (custom?: Partial<LineItem>) => {
     const newItem: LineItem = {

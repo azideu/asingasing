@@ -10,7 +10,6 @@ import {
   Receipt,
   ArrowRight,
   ArrowLeft,
-  AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -43,7 +42,6 @@ export function StepNavigation() {
       <nav aria-label="Receipt flow steps" className="w-full max-w-6xl mx-auto px-4 pt-4 pb-2 hidden md:block print:hidden">
         <div className="grid grid-cols-4 gap-2 bg-[#F3ECE1]/70 p-1.5 rounded-xl border border-[#E5DDCF]">
           {STEPS.map((s) => {
-            const Icon = s.icon;
             const isActive = step === s.step;
             const isCompleted = step > s.step;
 

@@ -31,7 +31,7 @@ function AppContent() {
       {/* Footer */}
       <footer className="mt-auto py-6 border-t border-[#E5DDCF] text-center text-xs text-[#78716C] font-mono">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>BetsuBetsu (別々) • Proportional Bill Split &amp; OCR Verification</span>
+          <span>AsingAsing • Proportional Bill Split</span>
           <span className="text-[#78716C]">100% Client-Side • Zero Data Stored On Servers</span>
         </div>
       </footer>

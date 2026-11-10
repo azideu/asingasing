@@ -18,7 +18,15 @@ export function fromCents(cents: number): number {
 
 export function isRoundingFee(fee: ExtraFee): boolean {
   const name = fee.name.toLowerCase();
-  return name.includes('rounding') || name.includes('round adj') || name.includes('round diff') || name.includes('round');
+  const isNameMatching =
+    name.includes('rounding') ||
+    name.includes('round') ||
+    name.includes('adj') ||
+    name.includes('diff') ||
+    name.includes('odd cent');
+  // Fixed fee of 10 cents or less is intrinsically a cash rounding / odd-cent adjustment
+  const isSmallFixedFee = fee.type === 'fixed' && fee.value > 0 && fee.value <= 0.10;
+  return isNameMatching || isSmallFixedFee;
 }
 
 export function calculateReceiptSplit(
@@ -165,10 +173,21 @@ export function calculateReceiptSplit(
     });
   }
 
-  // Distribute fees proportionally (or allocate rounding fee to lottery winner)
+  // Distribute fees proportionally (or allocate rounding fee to single designated payer)
   const assignedSubtotal = fromCents(totalAssignedSubtotalCents);
   const hasValidLotteryWinner =
     Boolean(roundingWinnerId) && participants.some((p) => p.id === roundingWinnerId);
+
+  // Identify designated payer for rounding fees & cent differences:
+  // Winner if lottery was drawn, otherwise default to the diner with largest subtotal (e.g. bill payer)
+  const sortedParticipants = [...participants].sort((a, b) => {
+    return (
+      toCents(breakdowns[b.id].rawSubtotal) -
+      toCents(breakdowns[a.id].rawSubtotal)
+    );
+  });
+  const defaultRoundingPayerId = sortedParticipants.length > 0 ? sortedParticipants[0].id : participants[0]?.id;
+  const designatedRoundingPayerId = hasValidLotteryWinner ? roundingWinnerId : defaultRoundingPayerId;
 
   for (const p of participants) {
     const b = breakdowns[p.id];
@@ -179,9 +198,9 @@ export function calculateReceiptSplit(
       const isRnd = isRoundingFee(cf.fee);
       let personalFeeShareCents = 0;
 
-      if (isRnd && hasValidLotteryWinner) {
-        // The lottery winner absorbs the entire rounding charge!
-        personalFeeShareCents = p.id === roundingWinnerId ? feeCents : 0;
+      if (isRnd) {
+        // Rounding fees are absorbed 100% in whole by ONE person, NEVER split into fractions of a cent!
+        personalFeeShareCents = p.id === designatedRoundingPayerId ? feeCents : 0;
       } else if (assignedSubtotal > 0) {
         // Proportion based on personal raw subtotal
         personalFeeShareCents = Math.round(
@@ -209,7 +228,7 @@ export function calculateReceiptSplit(
 
     b.totalFees = fromCents(personalTotalFeeCents);
     b.grandTotal = fromCents(toCents(b.rawSubtotal) + personalTotalFeeCents);
-    if (p.id === roundingWinnerId) {
+    if (p.id === designatedRoundingPayerId && hasValidLotteryWinner) {
       b.isLotteryWinner = true;
     }
   }
@@ -221,35 +240,19 @@ export function calculateReceiptSplit(
   }, 0);
 
   const centDifference = finalTargetTotalCents - totalAllocatedCents;
+  // Only apply penny adjustments for small rounding discrepancies (<= 15 cents) or when all items are assigned
+  const isMinorRoundingDifference = Math.abs(centDifference) <= Math.max(15, participants.length);
 
-  if (centDifference !== 0 && participants.length > 0) {
-    if (hasValidLotteryWinner && roundingWinnerId) {
-      // Lottery winner absorbs the penny difference
-      const b = breakdowns[roundingWinnerId];
-      b.centsAdjustment += fromCents(centDifference);
-      b.grandTotal = fromCents(toCents(b.grandTotal) + centDifference);
+  if (centDifference !== 0 && participants.length > 0 && (allAssigned || isMinorRoundingDifference)) {
+    // Single designated rounding payer absorbs the cent difference so other diners have 0 adjustment
+    const targetPayerId = designatedRoundingPayerId && breakdowns[designatedRoundingPayerId]
+      ? designatedRoundingPayerId
+      : sortedParticipants[0].id;
+    const b = breakdowns[targetPayerId];
+    b.centsAdjustment += fromCents(centDifference);
+    b.grandTotal = fromCents(toCents(b.grandTotal) + centDifference);
+    if (hasValidLotteryWinner) {
       b.isLotteryWinner = true;
-    } else {
-      // Sort participants by raw subtotal descending (largest shareholders get/absorb penny adjustments)
-      const sortedParticipants = [...participants].sort((a, b) => {
-        return (
-          toCents(breakdowns[b.id].rawSubtotal) -
-          toCents(breakdowns[a.id].rawSubtotal)
-        );
-      });
-
-      const step = centDifference > 0 ? 1 : -1;
-      let remainingAdjustment = Math.abs(centDifference);
-      let pIdx = 0;
-
-      while (remainingAdjustment > 0) {
-        const pid = sortedParticipants[pIdx % sortedParticipants.length].id;
-        const b = breakdowns[pid];
-        b.centsAdjustment += fromCents(step);
-        b.grandTotal = fromCents(toCents(b.grandTotal) + step);
-        remainingAdjustment -= 1;
-        pIdx++;
-      }
     }
   }
 
@@ -262,6 +265,16 @@ export function calculateReceiptSplit(
     }
   }
   const roundingTotal = fromCents(totalRoundingCents);
+  const isRoundingActive = Math.abs(totalRoundingCents) > 0;
+
+  // If rounding is removed or zero, completely clear lottery winner flags from all diners
+  if (!isRoundingActive) {
+    for (const p of participants) {
+      if (breakdowns[p.id]) {
+        breakdowns[p.id].isLotteryWinner = false;
+      }
+    }
+  }
 
   return {
     itemsSubtotal,
@@ -274,7 +287,7 @@ export function calculateReceiptSplit(
     allAssigned,
     breakdowns,
     roundingTotal,
-    roundingWinnerId: hasValidLotteryWinner ? roundingWinnerId : null,
+    roundingWinnerId: isRoundingActive && hasValidLotteryWinner ? roundingWinnerId : null,
   };
 }
 

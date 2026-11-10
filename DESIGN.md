@@ -1,5 +1,5 @@
 ---
-name: BetsuBetsu
+name: AsingAsing
 description: Japanese-inspired thermal receipt and proportional bill-splitting ledger
 colors:
   primary: "#1C1917"
@@ -75,13 +75,13 @@ components:
     padding: "6px 10px"
 ---
 
-# Design System: BetsuBetsu
+# Design System: AsingAsing
 
 ## Overview
 
 **Creative North Star: "The Thermal Ledger"**
 
-BetsuBetsu evokes the tactile intimacy and quiet precision of a Japanese restaurant slip printed on thermal paper. It is grounded in the tradition of *betsu-betsu* (paying separately), transforming the friction of bill calculation into an honest, tangible ritual. The aesthetic avoids cold corporate SaaS tropes and gaudy fintech gradients, choosing instead warm washi paper backgrounds, deep sumi charcoal ink, tactile paper creases, and perforated ticket details.
+AsingAsing evokes the tactile intimacy and quiet precision of a restaurant slip printed on thermal paper. It is grounded in the tradition of paying separately (*asing-asing*), transforming the friction of bill calculation into an honest, tangible ritual. The aesthetic avoids cold corporate SaaS tropes and gaudy fintech gradients, choosing instead warm washi paper backgrounds, deep sumi charcoal ink, tactile paper creases, and perforated ticket details.
 
 The density is calibrated for hurried tabletop ergonomics on mobile screens under restaurant lighting. Financial data is displayed with ledger-like rigor: monospace tabular figures ensure numbers align down columns, while delicate paper-crease dividers demarcate stages. Color is applied with intentional restraint—deep charcoal and paper hues carry the structural weight, while scarlet hanko stamps and matcha seals signify verification and mathematical closure.
 
@@ -126,7 +126,7 @@ The palette draws from traditional Japanese stationer and receipt paper material
 **Character:** A deliberate dialogue between an artisanal, literary Japanese editorial serif for mastheads and a crisp, distraction-free grotesque body, supported by monospace numbers that evoke thermal receipt printers.
 
 ### Hierarchy
-- **Display** (bold 700, 1.5rem / 24px, line-height 1.2): Masthead title "BetsuBetsu" and primary view headers.
+- **Display** (bold 700, 1.5rem / 24px, line-height 1.2): Masthead title "AsingAsing" and primary view headers.
 - **Headline** (bold 700, 1.25rem / 20px, line-height 1.3): Major step section headers and modal titles.
 - **Title** (semibold 600, 1rem / 16px, line-height 1.4): Card group headings and participant summary headers.
 - **Body** (regular 400, 0.875rem / 14px, line-height 1.5): Standard explanatory text, item descriptions, and user notes.
@@ -137,7 +137,7 @@ The palette draws from traditional Japanese stationer and receipt paper material
 
 ## Layout
 
-BetsuBetsu adopts a mobile-first, centered-column layout with a maximum container width of 1152px (`max-w-6xl`) on desktop, collapsing to a single-column thumb-friendly stack on handheld viewports (`max-w-md` to `max-w-xl`).
+AsingAsing adopts a mobile-first, centered-column layout with a maximum container width of 1152px (`max-w-6xl`) on desktop, collapsing to a single-column thumb-friendly stack on handheld viewports (`max-w-md` to `max-w-xl`).
 
 - **Header:** Sticky top header (backdrop-blur with 95% Washi Cream) anchored by a 1px crease border (`#E5DDCF`), carrying the serif brand mark, currency switcher, and quick reset.
 - **Step Navigation:** Desktop displays a 4-column connected progress tray (`#F3ECE1`); mobile transitions to an anchored bottom bar with thumb-accessible "Back" and "Next" triggers.
@@ -146,7 +146,7 @@ BetsuBetsu adopts a mobile-first, centered-column layout with a maximum containe
 
 ## Elevation & Depth
 
-BetsuBetsu adheres to a strictly flat, tactile surface model. Depth is established purely through tonal paper contrast and crisp 1px borders, simulating sheets of paper placed atop a desk.
+AsingAsing adheres to a strictly flat, tactile surface model. Depth is established purely through tonal paper contrast and crisp 1px borders, simulating sheets of paper placed atop a desk.
 
 ### Surface Vocabulary
 - **Canvas Base:** Washi Cream (`#FAF7F2`) ground floor.

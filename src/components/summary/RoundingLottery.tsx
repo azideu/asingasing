@@ -183,7 +183,7 @@ export function RoundingLottery() {
 
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-[#1C1917] truncate">{p.name}</div>
-                  <div className="text-[10px] font-mono text-[#78716C]">
+                  <div className="text-xs font-mono text-[#78716C]">
                     {isWinner ? (
                       <span className="text-[#C53030] font-semibold">
                         {roundingAmount < 0 ? 'Takes discount' : 'Covers rounding'}
@@ -193,12 +193,6 @@ export function RoundingLottery() {
                     )}
                   </div>
                 </div>
-
-                {isWinner && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-[#C53030] text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full shadow-2xs">
-                    運
-                  </span>
-                )}
               </div>
             );
           })}
@@ -208,9 +202,7 @@ export function RoundingLottery() {
         {currentWinner && !isSpinning && (
           <div className="mt-3 p-3 bg-white rounded-xl border border-[#C53030]/30 flex items-center justify-between text-xs text-[#1C1917] animate-fadeIn">
             <div className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-[#C53030] text-white flex items-center justify-center text-[10px] font-bold">
-                運
-              </span>
+              <Dices className="w-4 h-4 text-[#C53030] shrink-0" />
               <div>
                 <span className="font-bold">{currentWinner.name}</span>{' '}
                 {roundingAmount < 0 ? 'gets the' : 'takes the'}{' '}
@@ -220,7 +212,7 @@ export function RoundingLottery() {
                 {roundingAmount < 0 ? 'discount' : 'rounding'}.
               </div>
             </div>
-            <span className="text-[11px] font-mono text-[#78716C] hidden sm:inline">
+            <span className="text-xs font-mono text-[#78716C] hidden sm:inline">
               Cent balanced ✓
             </span>
           </div>

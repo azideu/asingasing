@@ -28,7 +28,7 @@ export function Header() {
         {/* Brand identity */}
         <div className="min-w-0 shrink">
           <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#1C1917] font-serif truncate">
-            BetsuBetsu
+            AsingAsing
           </h1>
           <p className="text-xs text-[#78716C] hidden sm:block truncate">
             Split restaurant bills by receipt

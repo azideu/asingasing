@@ -1,4 +1,4 @@
-import { LineItem, ExtraFee } from '@/types/receipt';
+import { LineItem, ExtraFee, normalizeFeeWithPresets } from '@/types/receipt';
 
 export interface PreprocessOptions {
   grayscale: boolean;
@@ -391,9 +391,21 @@ export function parseReceiptText(rawText: string): ParsedReceiptData {
     }
   }
 
+  const normalizedFees = fees.map((f) => {
+    const norm = normalizeFeeWithPresets(f);
+    return {
+      ...f,
+      name: norm.name,
+      type: norm.type,
+      value: norm.value,
+      appliesTo: norm.appliesTo,
+      isDiscount: norm.isDiscount,
+    };
+  });
+
   return {
     items,
-    fees,
+    fees: normalizedFees,
     subtotal: detectedSubtotal,
     grandTotal: detectedGrandTotal,
   };
