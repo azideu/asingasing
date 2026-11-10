@@ -24,18 +24,24 @@ export function ReceiptSummary() {
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
   const [paymentNote, setPaymentNote] = useState('');
 
-  // Fire celebratory confetti when loaded and balanced
+  // Fire celebratory confetti when loaded and balanced (honoring prefers-reduced-motion)
   useEffect(() => {
     if (calculation.allAssigned && calculation.isBalanced) {
-      try {
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.7 },
-          colors: ['#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#1C1917'],
-        });
-      } catch {
-        // ignore
+      const prefersReducedMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!prefersReducedMotion) {
+        try {
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.7 },
+            colors: ['#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#1C1917'],
+          });
+        } catch {
+          // ignore
+        }
       }
     }
   }, [calculation.allAssigned, calculation.isBalanced]);
@@ -117,7 +123,8 @@ export function ReceiptSummary() {
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#D9CDB8] bg-white text-xs font-medium text-[#1C1917] hover:bg-[#FAF7F2] transition-colors cursor-pointer shadow-2xs"
+            aria-label="Print receipt slip"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg border border-[#D9CDB8] bg-white text-xs font-medium text-[#1C1917] hover:bg-[#FAF7F2] transition-colors cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
             title="Print receipt"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -126,7 +133,8 @@ export function ReceiptSummary() {
 
           <button
             onClick={handleCopy}
-            className="inline-flex items-center gap-1.5 bg-[#1C1917] text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#332E2B] transition-all cursor-pointer shadow-xs"
+            aria-label="Copy formatted breakdown for WhatsApp or Telegram"
+            className="inline-flex items-center gap-1.5 bg-[#1C1917] text-white px-4 py-2 min-h-[40px] rounded-lg text-xs font-semibold hover:bg-[#332E2B] transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
           >
             {copied ? (
               <>
@@ -154,7 +162,8 @@ export function ReceiptSummary() {
           </div>
           <button
             onClick={() => setStep(3)}
-            className="text-amber-800 font-bold underline cursor-pointer"
+            aria-label="Assign unassigned items now"
+            className="text-amber-800 font-bold underline cursor-pointer p-1"
           >
             Assign Now
           </button>
@@ -164,7 +173,7 @@ export function ReceiptSummary() {
       {/* Master Receipt Total Stamp Banner */}
       <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <span className="stamp-badge text-[10px] text-[#1B6B38] bg-[#EBF5EE] border border-[#C6E6D1] px-2 py-0.5">
+          <span className="stamp-badge text-xs text-[#1B6B38] bg-[#EBF5EE] border border-[#C6E6D1] px-2.5 py-1">
             ★ VERIFIED &amp; CENT-BALANCED
           </span>
           <div className="text-xs text-[#78716C] font-mono">
@@ -206,7 +215,7 @@ export function ReceiptSummary() {
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-[#1C1917]">{p.name}</h4>
-                      <p className="text-[11px] text-[#78716C] font-mono">
+                      <p className="text-xs text-[#78716C] font-mono">
                         {b.items.length} item{b.items.length === 1 ? '' : 's'} consumed
                       </p>
                     </div>
@@ -240,7 +249,7 @@ export function ReceiptSummary() {
                   ))}
 
                   {b.centsAdjustment !== 0 && (
-                    <div className="flex justify-between text-[11px] text-[#78716C] italic pt-0.5 border-t border-[#E5DDCF]">
+                    <div className="flex justify-between text-xs text-[#78716C] italic pt-0.5 border-t border-[#E5DDCF]">
                       <span>Penny Closure Adjustment:</span>
                       <span className="tabular-numbers">
                         {b.centsAdjustment > 0 ? '+' : ''}
@@ -255,7 +264,9 @@ export function ReceiptSummary() {
                   <div className="pt-1">
                     <button
                       onClick={() => toggleExpand(p.id)}
-                      className="w-full flex items-center justify-between text-[11px] font-mono font-medium text-[#78716C] hover:text-[#1C1917] py-1 cursor-pointer"
+                      aria-expanded={isExpanded}
+                      aria-label={`${isExpanded ? 'Hide' : 'View'} itemized details for ${p.name}`}
+                      className="w-full flex items-center justify-between text-xs font-mono font-medium text-[#78716C] hover:text-[#1C1917] py-1.5 cursor-pointer"
                     >
                       <span>{isExpanded ? 'Hide Item Details' : 'View Item Details'}</span>
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -268,7 +279,7 @@ export function ReceiptSummary() {
                             <span className="truncate max-w-[200px]">
                               {it.itemName}{' '}
                               {it.shareRatio < 1 && (
-                                <span className="text-[#A8A29E] text-[10px]">
+                                <span className="text-[#78716C] text-xs">
                                   ({Math.round(it.shareRatio * 100)}%)
                                 </span>
                               )}
@@ -303,7 +314,7 @@ export function ReceiptSummary() {
 
         {/* Text Preview */}
         <div className="pt-2">
-          <div className="flex items-center justify-between text-[11px] font-mono text-[#78716C] pb-1">
+          <div className="flex items-center justify-between text-xs font-mono text-[#78716C] pb-1">
             <span>MESSAGE PREVIEW FOR GROUP CHAT</span>
             <button
               onClick={handleCopy}

@@ -243,6 +243,7 @@ export function ReceiptCapture() {
           type="file"
           accept="image/png,image/jpeg,image/webp"
           onChange={handleFileChange}
+          aria-label="Upload receipt image file"
           className="hidden"
         />
         <input
@@ -251,6 +252,7 @@ export function ReceiptCapture() {
           accept="image/*"
           capture="environment"
           onChange={handleFileChange}
+          aria-label="Capture receipt with camera"
           className="hidden"
         />
 
@@ -273,7 +275,7 @@ export function ReceiptCapture() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 bg-[#1C1917] text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#332E2B] active:scale-95 transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-2 bg-[#1C1917] text-white px-5 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#332E2B] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
               >
                 <ImageIcon className="w-4 h-4" />
                 Upload Image
@@ -281,7 +283,7 @@ export function ReceiptCapture() {
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="inline-flex items-center gap-2 bg-white border border-[#D9CDB8] text-[#1C1917] px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#FAF7F2] active:scale-95 transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-2 bg-white border border-[#D9CDB8] text-[#1C1917] px-5 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#FAF7F2] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
               >
                 <Camera className="w-4 h-4" />
                 Take Photo
@@ -289,7 +291,7 @@ export function ReceiptCapture() {
               <button
                 type="button"
                 onClick={() => setShowPasteModal(true)}
-                className="inline-flex items-center gap-2 bg-[#FAF7F2] border border-[#D9CDB8] text-[#57534E] hover:text-[#1C1917] px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-[#F3ECE1] active:scale-95 transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-2 bg-[#FAF7F2] border border-[#D9CDB8] text-[#57534E] hover:text-[#1C1917] px-4 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#F3ECE1] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
               >
                 <ClipboardPaste className="w-4 h-4" />
                 Paste Text
@@ -477,14 +479,14 @@ export function ReceiptCapture() {
             )}
 
             {errorMsg && (
-              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-950 space-y-2">
+              <div className="p-3.5 rounded-xl bg-[#FAF7F2] border border-[#C53030]/30 text-xs text-[#1C1917] space-y-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-amber-700 font-bold">Notice:</span>
+                  <span className="text-[#C53030] font-bold">Notice:</span>
                   <div>{errorMsg}</div>
                 </div>
                 <button
                   onClick={() => setShowPasteModal(true)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-amber-900 underline cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-[#C53030] underline cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Open Text Editor / Paste Receipt Lines</span>

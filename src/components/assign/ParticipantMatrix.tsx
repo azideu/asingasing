@@ -69,7 +69,7 @@ export function ParticipantMatrix() {
               <strong>{calculation.unassignedItemIds.length} item(s) unassigned:</strong> Tag someone or click &ldquo;Split All&rdquo; so nobody gets missed.
             </span>
           </div>
-          <span className="font-mono text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+          <span className="font-mono text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
             {calculation.unassignedItemIds.length} Pending
           </span>
         </div>
@@ -81,7 +81,7 @@ export function ParticipantMatrix() {
               All {items.length} items successfully assigned across {participants.length} diners!
             </span>
           </div>
-          <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+          <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
             100% Accounted
           </span>
         </div>
@@ -128,22 +128,23 @@ export function ParticipantMatrix() {
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#E5DDCF] bg-[#FAF7F2] text-xs shadow-2xs"
               >
                 <div
-                  className="w-5 h-5 rounded-full text-white font-bold flex items-center justify-center text-[10px] shadow-xs"
+                  className="w-5 h-5 rounded-full text-white font-bold flex items-center justify-center text-xs font-mono shadow-xs"
                   style={{ backgroundColor: p.color }}
                 >
                   {p.avatarLetter}
                 </div>
                 <span className="font-semibold text-[#1C1917]">{p.name}</span>
-                <span className="font-mono text-[#78716C] text-[11px] tabular-numbers font-medium">
+                <span className="font-mono text-[#78716C] text-xs tabular-numbers font-medium">
                   {formatCurrency(runningTotal, currency)}
                 </span>
                 {participants.length > 1 && (
                   <button
                     onClick={() => removeParticipant(p.id)}
-                    className="text-[#A8A29E] hover:text-[#C53030] p-0.5 rounded transition-colors cursor-pointer"
+                    aria-label={`Remove participant ${p.name}`}
+                    className="text-[#78716C] hover:text-[#C53030] w-6 h-6 flex items-center justify-center rounded-md transition-colors cursor-pointer"
                     title={`Remove ${p.name}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
@@ -182,7 +183,7 @@ export function ParticipantMatrix() {
                       {item.name}
                     </span>
                     {item.qty > 1 && (
-                      <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-[#F3ECE1] text-[#78716C]">
+                      <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-[#F3ECE1] text-[#78716C]">
                         {item.qty}x
                       </span>
                     )}
@@ -193,12 +194,12 @@ export function ParticipantMatrix() {
                       {formatCurrency(item.totalPrice, currency)}
                     </span>
                     {splitCount > 1 && (
-                      <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-medium text-[11px]">
+                      <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-medium text-xs">
                         1/{splitCount} each ({formatCurrency(shareAmount, currency)})
                       </span>
                     )}
                     {isUnassigned && (
-                      <span className="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-medium text-[11px]">
+                      <span className="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-medium text-xs">
                         Unassigned
                       </span>
                     )}
@@ -215,7 +216,9 @@ export function ParticipantMatrix() {
                         key={p.id}
                         type="button"
                         onClick={() => toggleItemAssignment(item.id, p.id)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                        aria-pressed={isSelected}
+                        aria-label={`Assign ${item.name} to ${p.name}`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917] ${
                           isSelected
                             ? 'text-white shadow-xs'
                             : 'bg-[#FAF7F2] text-[#57534E] hover:bg-[#F3ECE1] border border-[#E5DDCF]'
@@ -225,7 +228,7 @@ export function ParticipantMatrix() {
                         }}
                       >
                         <div
-                          className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          className={`w-4.5 h-4.5 rounded-full flex items-center justify-center text-xs font-mono font-bold ${
                             isSelected ? 'bg-white/30 text-white' : 'text-white'
                           }`}
                           style={{
@@ -244,7 +247,8 @@ export function ParticipantMatrix() {
                   <button
                     type="button"
                     onClick={() => assignItemToAll(item.id)}
-                    className="text-[11px] font-medium text-[#78716C] hover:text-[#1C1917] bg-[#FAF7F2] hover:bg-[#F3ECE1] border border-[#E5DDCF] px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
+                    aria-label={`Split ${item.name} between everyone`}
+                    className="text-xs font-medium text-[#57534E] hover:text-[#1C1917] bg-[#FAF7F2] hover:bg-[#F3ECE1] border border-[#E5DDCF] px-3 py-2 min-h-[40px] rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
                     title="Split between everyone"
                   >
                     Split All
@@ -255,10 +259,11 @@ export function ParticipantMatrix() {
                     <button
                       type="button"
                       onClick={() => clearItemAssignments(item.id)}
-                      className="text-[11px] text-[#A8A29E] hover:text-[#C53030] p-1.5 rounded transition-colors cursor-pointer"
+                      aria-label={`Clear assignments for ${item.name}`}
+                      className="text-[#78716C] hover:text-[#C53030] w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[#F3ECE1] transition-colors cursor-pointer"
                       title="Clear assignments"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-4 h-4" />
                     </button>
                   )}
                 </div>

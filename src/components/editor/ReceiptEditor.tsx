@@ -28,6 +28,99 @@ import {
   FileText,
 } from 'lucide-react';
 
+// Isolated Receipt Inspection Loupe to prevent high-frequency mousemove events from re-rendering the editor
+function ReceiptLoupe({ receiptImage }: { receiptImage: string }) {
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [panPosition, setPanPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPanPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const resetZoom = () => {
+    setZoomLevel(1);
+    setPanPosition({ x: 0, y: 0 });
+  };
+
+  return (
+    <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E5DDCF] shadow-xs overflow-hidden flex flex-col h-[520px]">
+      {/* Loupe Header / Controls */}
+      <div className="px-4 py-2.5 bg-[#F3ECE1]/70 border-b border-[#E5DDCF] flex items-center justify-between">
+        <span className="text-xs font-mono font-bold text-[#57534E] uppercase tracking-wider">
+          Receipt Inspection Loupe
+        </span>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 3))}
+            aria-label="Zoom In"
+            className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-[#57534E] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+            title="Zoom In"
+          >
+            <ZoomIn className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.5))}
+            aria-label="Zoom Out"
+            className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-[#57534E] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+            title="Zoom Out"
+          >
+            <ZoomOut className="w-4 h-4" />
+          </button>
+          <button
+            onClick={resetZoom}
+            aria-label="Reset Zoom"
+            className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg text-[#57534E] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+            title="Reset Zoom"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+          <span className="text-xs font-mono text-[#78716C] ml-1">
+            {Math.round(zoomLevel * 100)}%
+          </span>
+        </div>
+      </div>
+
+      {/* Draggable Canvas Viewport */}
+      <div
+        className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing bg-[#FAF7F2] flex items-center justify-center p-4 select-none"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={receiptImage}
+          alt="Receipt Loupe"
+          draggable={false}
+          style={{
+            transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomLevel})`,
+            transformOrigin: 'center center',
+            transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+          }}
+          className="max-h-full object-contain pointer-events-none drop-shadow-md"
+        />
+      </div>
+      <div className="px-3 py-2 bg-[#FAF7F2] border-t border-[#E5DDCF] text-xs text-[#78716C] text-center font-mono">
+        Click &amp; drag to pan • inspect faint item prices
+      </div>
+    </div>
+  );
+}
+
 export function ReceiptEditor() {
   const {
     items,
@@ -52,36 +145,11 @@ export function ReceiptEditor() {
     setRawOcrText,
   } = useReceipt();
 
-  // Image pan/zoom states
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
-  const [panPosition, setPanPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [showImagePane, setShowImagePane] = useState<boolean>(true);
 
   // Paste / Raw text editor modal
   const [showTextModal, setShowTextModal] = useState<boolean>(false);
   const [editorRawText, setEditorRawText] = useState<string>(rawOcrText || '');
-
-  // Pan event handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setPanPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const resetZoom = () => {
-    setZoomLevel(1);
-    setPanPosition({ x: 0, y: 0 });
-  };
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-4 space-y-6">
@@ -154,7 +222,7 @@ export function ReceiptEditor() {
               <strong className="font-mono">{formatCurrency(calculation.targetGrandTotal, currency)}</strong>.
             </span>
           </div>
-          <span className="font-mono text-[11px] font-bold text-emerald-700 uppercase bg-emerald-100/80 px-2 py-0.5 rounded">
+          <span className="font-mono text-xs font-bold text-emerald-700 uppercase bg-emerald-100/80 px-2 py-0.5 rounded">
             Balanced
           </span>
         </div>
@@ -164,66 +232,7 @@ export function ReceiptEditor() {
       <div className={`grid grid-cols-1 ${showImagePane && receiptImage ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 items-start`}>
         {/* Left Side: Receipt Pan / Zoom Loupe */}
         {showImagePane && receiptImage && (
-          <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E5DDCF] shadow-xs overflow-hidden flex flex-col h-[520px]">
-            {/* Loupe Header / Controls */}
-            <div className="px-4 py-2.5 bg-[#F3ECE1]/70 border-b border-[#E5DDCF] flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-[#57534E] uppercase tracking-wider">
-                Receipt Inspection Loupe
-              </span>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 3))}
-                  className="p-1 hover:bg-white rounded text-[#57534E] cursor-pointer"
-                  title="Zoom In"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.5))}
-                  className="p-1 hover:bg-white rounded text-[#57534E] cursor-pointer"
-                  title="Zoom Out"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={resetZoom}
-                  className="p-1 hover:bg-white rounded text-[#57534E] cursor-pointer"
-                  title="Reset Zoom"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-                <span className="text-[11px] font-mono text-[#78716C] ml-1">
-                  {Math.round(zoomLevel * 100)}%
-                </span>
-              </div>
-            </div>
-
-            {/* Draggable Canvas Viewport */}
-            <div
-              className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing bg-[#FAF7F2] flex items-center justify-center p-4 select-none"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={receiptImage}
-                alt="Receipt Loupe"
-                draggable={false}
-                style={{
-                  transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomLevel})`,
-                  transformOrigin: 'center center',
-                  transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-                }}
-                className="max-h-full object-contain pointer-events-none drop-shadow-md"
-              />
-            </div>
-            <div className="px-3 py-1.5 bg-[#FAF7F2] border-t border-[#E5DDCF] text-[11px] text-[#78716C] text-center font-mono">
-              Click &amp; drag to pan • inspect faint item prices
-            </div>
-          </div>
+          <ReceiptLoupe receiptImage={receiptImage} />
         )}
 
         {/* Right Side: Inline Editing Table & Fee Manager */}
@@ -277,7 +286,7 @@ export function ReceiptEditor() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-[#E5DDCF] bg-[#FAF7F2]/60 text-[#78716C] font-mono text-[11px]">
+                    <tr className="border-b border-[#E5DDCF] bg-[#FAF7F2]/60 text-[#78716C] font-mono text-xs">
                       <th className="py-2.5 px-3 font-semibold">ITEM DESCRIPTION</th>
                       <th className="py-2.5 px-2 font-semibold w-16 text-center">QTY</th>
                       <th className="py-2.5 px-2 font-semibold w-24 text-right">UNIT PRICE</th>
@@ -364,14 +373,16 @@ export function ReceiptEditor() {
                           <div className="flex items-center justify-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => duplicateItem(item.id)}
-                              className="p-1 hover:text-[#1C1917] text-[#78716C] rounded hover:bg-white cursor-pointer"
+                              aria-label={`Duplicate item ${item.name || idx + 1}`}
+                              className="w-7 h-7 flex items-center justify-center hover:text-[#1C1917] text-[#78716C] rounded hover:bg-white cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1917]"
                               title="Duplicate row"
                             >
                               <Copy className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => deleteItem(item.id)}
-                              className="p-1 hover:text-[#C53030] text-[#78716C] rounded hover:bg-white cursor-pointer"
+                              aria-label={`Delete item ${item.name || idx + 1}`}
+                              className="w-7 h-7 flex items-center justify-center hover:text-[#C53030] text-[#78716C] rounded hover:bg-white cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#C53030]"
                               title="Delete row"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -438,10 +449,11 @@ export function ReceiptEditor() {
                       <button
                         type="button"
                         onClick={() => updateFee(fee.id, { type: 'percent' })}
-                        className={`px-2 py-1 text-xs font-mono font-semibold transition-colors cursor-pointer ${
+                        aria-label="Calculate as percentage rate"
+                        className={`px-2.5 py-1.5 text-xs font-mono font-semibold transition-colors cursor-pointer ${
                           fee.type === 'percent'
                             ? 'bg-[#1C1917] text-white'
-                            : 'text-[#78716C] hover:bg-stone-100'
+                            : 'text-[#78716C] hover:bg-[#F3ECE1]'
                         }`}
                         title="Percentage rate"
                       >
@@ -450,10 +462,11 @@ export function ReceiptEditor() {
                       <button
                         type="button"
                         onClick={() => updateFee(fee.id, { type: 'fixed' })}
-                        className={`px-2 py-1 text-xs font-mono font-semibold transition-colors cursor-pointer ${
+                        aria-label="Calculate as fixed amount"
+                        className={`px-2.5 py-1.5 text-xs font-mono font-semibold transition-colors cursor-pointer ${
                           fee.type === 'fixed'
                             ? 'bg-[#1C1917] text-white'
-                            : 'text-[#78716C] hover:bg-stone-100'
+                            : 'text-[#78716C] hover:bg-[#F3ECE1]'
                         }`}
                         title="Fixed amount"
                       >
@@ -472,6 +485,7 @@ export function ReceiptEditor() {
                           const val = parseFloat(e.target.value);
                           updateFee(fee.id, { value: isNaN(val) ? 0 : val });
                         }}
+                        aria-label={`Fee value for ${fee.name || 'unnamed'}`}
                         className="w-full bg-white border border-[#D9CDB8] rounded-md px-2 py-1 text-xs font-mono font-bold text-right tabular-numbers"
                       />
                     </div>
@@ -484,7 +498,8 @@ export function ReceiptEditor() {
                           appliesTo: e.target.value as 'subtotal' | 'subtotal_plus_service',
                         })
                       }
-                      className="bg-white border border-[#D9CDB8] rounded-md px-2 py-1 text-[11px] text-[#57534E] font-medium"
+                      aria-label="Compound calculation base"
+                      className="bg-white border border-[#D9CDB8] rounded-md px-2 py-1 text-xs text-[#57534E] font-medium"
                       title="Compound calculation base"
                     >
                       <option value="subtotal">On Subtotal</option>
@@ -492,7 +507,7 @@ export function ReceiptEditor() {
                     </select>
 
                     {/* Discount check */}
-                    <label className="flex items-center gap-1 text-[11px] text-[#57534E] cursor-pointer">
+                    <label className="flex items-center gap-1.5 text-xs text-[#57534E] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={fee.isDiscount || false}
@@ -519,7 +534,8 @@ export function ReceiptEditor() {
                     {/* Delete fee */}
                     <button
                       onClick={() => deleteFee(fee.id)}
-                      className="p-1 text-[#78716C] hover:text-[#C53030] cursor-pointer"
+                      aria-label={`Remove fee ${fee.name || 'unnamed'}`}
+                      className="w-7 h-7 flex items-center justify-center text-[#78716C] hover:text-[#C53030] rounded hover:bg-[#F3ECE1] cursor-pointer"
                       title="Remove fee"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -533,7 +549,7 @@ export function ReceiptEditor() {
           {/* Grand Total Comparison Box */}
           <div className="bg-[#FAF7F2] rounded-2xl border border-[#E5DDCF] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[11px] font-mono uppercase text-[#78716C] font-semibold">
+              <span className="text-xs font-mono uppercase text-[#78716C] font-semibold">
                 Printed Receipt Grand Total
               </span>
               <p className="text-xs text-[#78716C]">
