@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#121110] text-[#F5EFE6] selection:bg-[#D4A373] selection:text-[#121110]">
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
