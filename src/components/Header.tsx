@@ -31,7 +31,7 @@ export function Header() {
             BetsuBetsu
           </h1>
           <p className="text-[11px] text-[#78716C] hidden sm:block truncate">
-            Artisanal receipt OCR &amp; proportional bill split
+            Split restaurant bills by receipt
           </p>
         </div>
 

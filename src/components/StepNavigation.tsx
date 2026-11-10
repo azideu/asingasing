@@ -15,10 +15,10 @@ import {
 } from 'lucide-react';
 
 const STEPS: { step: StepType; label: string; icon: React.ElementType; desc: string }[] = [
-  { step: 1, label: 'Capture & Scan', icon: Camera, desc: 'OCR receipt image' },
-  { step: 2, label: 'Review & Edit', icon: FileCheck2, desc: 'Verify items & fees' },
+  { step: 1, label: 'Scan Receipt', icon: Camera, desc: 'Photo or paste' },
+  { step: 2, label: 'Review & Edit', icon: FileCheck2, desc: 'Check items and fees' },
   { step: 3, label: 'Assign People', icon: Users2, desc: 'Split dishes' },
-  { step: 4, label: 'Summary & Share', icon: Receipt, desc: 'Exact breakdown' },
+  { step: 4, label: 'Summary', icon: Receipt, desc: 'Final totals' },
 ];
 
 export function StepNavigation() {
