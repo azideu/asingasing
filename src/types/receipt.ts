@@ -48,6 +48,7 @@ export interface PersonalBreakdown {
   totalFees: number;
   grandTotal: number;
   centsAdjustment: number; // penny allocation adjustment applied
+  isLotteryWinner?: boolean;
 }
 
 export interface CalculationResult {
@@ -63,6 +64,8 @@ export interface CalculationResult {
   unassignedItemIds: string[];
   allAssigned: boolean;
   breakdowns: Record<string, PersonalBreakdown>;
+  roundingTotal?: number;
+  roundingWinnerId?: string | null;
 }
 
 export type StepType = 1 | 2 | 3 | 4; // 1: Capture, 2: Review & Edit, 3: Assign, 4: Summary

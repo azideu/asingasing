@@ -23,7 +23,7 @@ export function Header() {
   } = useReceipt();
 
   return (
-    <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E5DDCF] px-3 sm:px-6 py-2.5 sm:py-3 w-full">
+    <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E5DDCF] px-3 sm:px-6 py-2.5 sm:py-3 w-full print:hidden">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-4 w-full">
         {/* Brand identity */}
         <div className="min-w-0 shrink">

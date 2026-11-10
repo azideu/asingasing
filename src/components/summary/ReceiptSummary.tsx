@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useReceipt } from '@/context/ReceiptContext';
 import { formatCurrency } from '@/lib/calculator';
 import confetti from 'canvas-confetti';
+import { RoundingLottery } from './RoundingLottery';
 import {
   CheckCircle2,
   Copy,
@@ -76,6 +77,13 @@ export function ReceiptSummary() {
       msg += `\n`;
     });
 
+    if (calculation.roundingWinnerId && calculation.roundingTotal !== undefined && calculation.roundingTotal !== 0) {
+      const winner = participants.find((p) => p.id === calculation.roundingWinnerId);
+      if (winner) {
+        msg += `🎲 *Hasū-Kuji (Rounding Fate):* ${winner.name} absorbed the ${calculation.roundingTotal > 0 ? '+' : ''}${formatCurrency(calculation.roundingTotal, currency)} rounding adjustment!\n\n`;
+      }
+    }
+
     if (paymentNote.trim()) {
       msg += `💳 *Payment Details:*\n${paymentNote.trim()}\n\n`;
     }
@@ -108,9 +116,23 @@ export function ReceiptSummary() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-4 space-y-6">
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E5DDCF]">
+    <div className="w-full max-w-4xl mx-auto px-4 py-4 space-y-6 print:p-0 print:m-0 print:max-w-none print:space-y-4">
+      {/* Dedicated Print / PDF Header */}
+      <div className="hidden print:flex items-center justify-between pb-3 mb-1 border-b-2 border-[#1C1917]">
+        <div>
+          <h1 className="text-xl font-bold font-serif text-[#1C1917]">BetsuBetsu (別々)</h1>
+          <p className="text-xs text-[#57534E] font-mono">Restaurant Bill Settlement Slip</p>
+        </div>
+        <div className="text-right text-xs font-mono text-[#57534E]">
+          <div className="font-bold text-[#1C1917]">
+            Grand Total: {formatCurrency(calculation.targetGrandTotal, currency)}
+          </div>
+          <div>{participants.length} Diners • {items.length} Items</div>
+        </div>
+      </div>
+
+      {/* On-screen Header bar (Hidden in print/PDF) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E5DDCF] print:hidden">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1C1917] font-serif">
             Summary &amp; Settle
@@ -151,9 +173,9 @@ export function ReceiptSummary() {
         </div>
       </div>
 
-      {/* Discrepancy warning if any items still unassigned */}
+      {/* Discrepancy warning if any items still unassigned (Hidden in print/PDF) */}
       {!calculation.allAssigned && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 px-4 flex items-center justify-between text-xs text-amber-900">
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 px-4 flex items-center justify-between text-xs text-amber-900 print:hidden">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
             <span>
@@ -171,7 +193,7 @@ export function ReceiptSummary() {
       )}
 
       {/* Master Receipt Total Stamp Banner */}
-      <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:p-3 print:my-1 print-break-inside-avoid print:border-[#D9CDB8]">
         <div className="space-y-1">
           <span className="stamp-badge text-xs text-[#1B6B38] bg-[#EBF5EE] border border-[#C6E6D1] px-2.5 py-1">
             ★ VERIFIED &amp; CENT-BALANCED
@@ -189,8 +211,11 @@ export function ReceiptSummary() {
         </div>
       </div>
 
+      {/* Hasū-Kuji: The Rounding Lottery */}
+      <RoundingLottery />
+
       {/* Participant Breakdown Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-3">
         {participants.map((p) => {
           const b = calculation.breakdowns[p.id];
           const isExpanded = !!expandedCards[p.id];
@@ -201,20 +226,29 @@ export function ReceiptSummary() {
           return (
             <div
               key={p.id}
-              className="bg-white rounded-2xl border border-[#E5DDCF] shadow-xs hover:border-[#C4B9A7] transition-all overflow-hidden flex flex-col justify-between"
+              className={`bg-white rounded-2xl border shadow-xs transition-all overflow-hidden flex flex-col justify-between print-break-inside-avoid print:border-[#D9CDB8] ${
+                b.isLotteryWinner ? 'border-[#C53030]/60 ring-1 ring-[#C53030]/20' : 'border-[#E5DDCF] hover:border-[#C4B9A7]'
+              }`}
             >
-              <div className="p-4 space-y-3">
+              <div className="p-4 space-y-3 print:p-3">
                 {/* Participant Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div
-                      className="w-8 h-8 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-xs"
+                      className="w-8 h-8 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-xs print:w-6 print:h-6 print:text-[10px]"
                       style={{ backgroundColor: p.color }}
                     >
                       {p.avatarLetter}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-[#1C1917]">{p.name}</h4>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-sm font-bold text-[#1C1917]">{p.name}</h4>
+                        {b.isLotteryWinner && (
+                          <span className="stamp-badge text-[9px] text-[#C53030] bg-[#FDF2F2] border border-[#F5C2C2] px-1.5 py-0.2">
+                            運 FATE
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-[#78716C] font-mono">
                         {b.items.length} item{b.items.length === 1 ? '' : 's'} consumed
                       </p>
@@ -223,14 +257,14 @@ export function ReceiptSummary() {
 
                   {/* Personal Grand Total */}
                   <div className="text-right">
-                    <div className="text-xl font-bold font-mono text-[#1C1917] tabular-numbers">
+                    <div className="text-xl font-bold font-mono text-[#1C1917] tabular-numbers print:text-base">
                       {formatCurrency(b.grandTotal, currency)}
                     </div>
                   </div>
                 </div>
 
                 {/* Micro Breakdown Summary */}
-                <div className="bg-[#FAF7F2] rounded-xl p-3 border border-[#E5DDCF] text-xs font-mono space-y-1.5">
+                <div className="bg-[#FAF7F2] rounded-xl p-3 border border-[#E5DDCF] text-xs font-mono space-y-1.5 print:p-2 print:border-[#E5DDCF]">
                   <div className="flex justify-between text-[#78716C]">
                     <span>Items Subtotal:</span>
                     <span className="font-semibold text-[#1C1917] tabular-numbers">
@@ -259,38 +293,40 @@ export function ReceiptSummary() {
                   )}
                 </div>
 
-                {/* Expandable itemized consumption list */}
+                {/* Expandable itemized consumption list (Always expanded in print/PDF) */}
                 {hasItems && (
                   <div className="pt-1">
                     <button
                       onClick={() => toggleExpand(p.id)}
                       aria-expanded={isExpanded}
                       aria-label={`${isExpanded ? 'Hide' : 'View'} itemized details for ${p.name}`}
-                      className="w-full flex items-center justify-between text-xs font-mono font-medium text-[#78716C] hover:text-[#1C1917] py-1.5 cursor-pointer"
+                      className="w-full flex items-center justify-between text-xs font-mono font-medium text-[#78716C] hover:text-[#1C1917] py-1.5 cursor-pointer print:hidden"
                     >
                       <span>{isExpanded ? 'Hide Item Details' : 'View Item Details'}</span>
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
 
-                    {isExpanded && (
-                      <div className="mt-2 space-y-1 pt-2 border-t border-[#F3ECE1] text-xs font-mono">
-                        {b.items.map((it, idx) => (
-                          <div key={idx} className="flex justify-between text-[#57534E]">
-                            <span className="truncate max-w-[200px]">
-                              {it.itemName}{' '}
-                              {it.shareRatio < 1 && (
-                                <span className="text-[#78716C] text-xs">
-                                  ({Math.round(it.shareRatio * 100)}%)
-                                </span>
-                              )}
-                            </span>
-                            <span className="font-semibold tabular-numbers">
-                              {formatCurrency(it.shareAmount, currency)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div
+                      className={`mt-2 space-y-1 pt-2 border-t border-[#F3ECE1] text-xs font-mono ${
+                        isExpanded ? 'block' : 'hidden print:block'
+                      }`}
+                    >
+                      {b.items.map((it, idx) => (
+                        <div key={idx} className="flex justify-between text-[#57534E]">
+                          <span className="truncate max-w-[200px]">
+                            {it.itemName}{' '}
+                            {it.shareRatio < 1 && (
+                              <span className="text-[#78716C] text-xs">
+                                ({Math.round(it.shareRatio * 100)}%)
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-semibold tabular-numbers">
+                            {formatCurrency(it.shareAmount, currency)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -299,8 +335,8 @@ export function ReceiptSummary() {
         })}
       </div>
 
-      {/* Payment Note Option & Text Preview Box */}
-      <div className="bg-white rounded-2xl border border-[#E5DDCF] p-4 sm:p-5 shadow-xs space-y-3">
+      {/* Payment Note Option & Text Preview Box (Screen only) */}
+      <div className="bg-white rounded-2xl border border-[#E5DDCF] p-4 sm:p-5 shadow-xs space-y-3 print:hidden">
         <h3 className="text-xs font-mono font-bold text-[#1C1917] uppercase tracking-wider">
           Add Payment Instructions (Optional)
         </h3>
@@ -327,6 +363,22 @@ export function ReceiptSummary() {
             {generateMessageText()}
           </pre>
         </div>
+      </div>
+
+      {/* Printable Payment Note (Visible in print/PDF only when filled) */}
+      {paymentNote.trim() && (
+        <div className="hidden print:block bg-[#FAF7F2] border border-[#D9CDB8] rounded-xl p-3 text-xs font-mono space-y-1 print-break-inside-avoid">
+          <span className="font-bold text-[#1C1917] uppercase tracking-wider text-[10px] block">
+            Payment Instructions
+          </span>
+          <p className="text-[#57534E] leading-relaxed">{paymentNote.trim()}</p>
+        </div>
+      )}
+
+      {/* Printable Slip Footer */}
+      <div className="hidden print:flex items-center justify-between pt-3 border-t border-[#D9CDB8] text-[10px] font-mono text-[#78716C] print-break-inside-avoid">
+        <span>BetsuBetsu (別々) • Proportional Bill Settlement</span>
+        <span>Exact Cent Balanced ✓</span>
       </div>
     </div>
   );

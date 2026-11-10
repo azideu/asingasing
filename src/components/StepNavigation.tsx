@@ -40,7 +40,7 @@ export function StepNavigation() {
   return (
     <>
       {/* Desktop / Tablet Stepper Header */}
-      <nav aria-label="Receipt flow steps" className="w-full max-w-6xl mx-auto px-4 pt-4 pb-2 hidden md:block">
+      <nav aria-label="Receipt flow steps" className="w-full max-w-6xl mx-auto px-4 pt-4 pb-2 hidden md:block print:hidden">
         <div className="grid grid-cols-4 gap-2 bg-[#F3ECE1]/70 p-1.5 rounded-xl border border-[#E5DDCF]">
           {STEPS.map((s) => {
             const Icon = s.icon;
@@ -88,7 +88,7 @@ export function StepNavigation() {
       </nav>
 
       {/* Mobile Sticky Bottom Navigation Bar */}
-      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-t border-[#E5DDCF] px-4 py-2.5 md:hidden">
+      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-t border-[#E5DDCF] px-4 py-2.5 md:hidden print:hidden">
         <div className="max-w-md mx-auto flex items-center justify-between gap-2">
           {step > 1 ? (
             <button

@@ -39,11 +39,16 @@ interface ReceiptContextType {
   deleteFee: (id: string) => void;
   addParticipant: (name: string, color?: string) => void;
   removeParticipant: (id: string) => void;
+  updateParticipantColor: (id: string, color?: string) => void;
   toggleItemAssignment: (itemId: string, participantId: string) => void;
   assignItemToAll: (itemId: string) => void;
   clearItemAssignments: (itemId: string) => void;
   resolveDiscrepancy: () => void;
   resetAll: () => void;
+
+  // Rounding Lottery
+  roundingWinnerId: string | null;
+  setRoundingWinnerId: (id: string | null) => void;
 
   // Calculation output
   calculation: CalculationResult;
@@ -53,15 +58,23 @@ const ReceiptContext = createContext<ReceiptContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'betsubetsu_session_v4';
 
-const CURATED_COLORS = [
-  '#3B82F6', // Blue
-  '#EC4899', // Pink
-  '#10B981', // Emerald
-  '#F59E0B', // Amber
-  '#8B5CF6', // Purple
-  '#14B8A6', // Teal
-  '#EF4444', // Red
-  '#6366F1', // Indigo
+export const CURATED_COLORS = [
+  '#2563EB', // Blue
+  '#059669', // Emerald
+  '#D97706', // Amber
+  '#7C3AED', // Violet
+  '#EA580C', // Orange
+  '#0D9488', // Teal
+  '#DC2626', // Red
+  '#4F46E5', // Indigo
+  '#0891B2', // Cyan
+  '#9333EA', // Purple
+  '#16A34A', // Green
+  '#C2410C', // Terracotta
+  '#DB2777', // Magenta
+  '#CA8A04', // Goldenrod
+  '#0284C7', // Sky Blue
+  '#475569', // Slate
 ];
 
 export function ReceiptProvider({ children }: { children: React.ReactNode }) {
@@ -73,6 +86,7 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
   const [targetGrandTotal, setTargetGrandTotal] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string>('RM');
   const [participants, setParticipants] = useState<Participant[]>(SAMPLE_PARTICIPANTS);
+  const [roundingWinnerId, setRoundingWinnerId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Hydrate from localStorage on client mount
@@ -81,6 +95,7 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (parsed.items) setItems(parsed.items);
         if (parsed.fees) setFees(parsed.fees);
         if (parsed.participants && parsed.participants.length > 0)
@@ -118,8 +133,8 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
   }, [step, items, fees, targetGrandTotal, currency, participants, receiptImage, isHydrated]);
 
   const calculation = useMemo(() => {
-    return calculateReceiptSplit(items, fees, participants, targetGrandTotal);
-  }, [items, fees, participants, targetGrandTotal]);
+    return calculateReceiptSplit(items, fees, participants, targetGrandTotal, roundingWinnerId);
+  }, [items, fees, participants, targetGrandTotal, roundingWinnerId]);
 
   const addItem = (custom?: Partial<LineItem>) => {
     const newItem: LineItem = {
@@ -196,16 +211,38 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
   const addParticipant = (name: string, customColor?: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    const color =
-      customColor ||
-      CURATED_COLORS[participants.length % CURATED_COLORS.length];
-    const newParticipant: Participant = {
-      id: `p-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      name: trimmed,
-      color,
-      avatarLetter: trimmed.charAt(0).toUpperCase(),
-    };
-    setParticipants((prev) => [...prev, newParticipant]);
+
+    setParticipants((prev) => {
+      // Find an unused color from CURATED_COLORS so each person gets a fresh hue
+      const usedColors = new Set(prev.map((p) => p.color.toLowerCase()));
+      const autoColor =
+        customColor ||
+        CURATED_COLORS.find((c) => !usedColors.has(c.toLowerCase())) ||
+        CURATED_COLORS[prev.length % CURATED_COLORS.length];
+
+      const newParticipant: Participant = {
+        id: `p-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        name: trimmed,
+        color: autoColor,
+        avatarLetter: trimmed.charAt(0).toUpperCase(),
+      };
+      return [...prev, newParticipant];
+    });
+  };
+
+  const updateParticipantColor = (id: string, newColor?: string) => {
+    setParticipants((prev) =>
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        if (newColor) return { ...p, color: newColor };
+        // Cycle to next color in CURATED_COLORS
+        const currentIdx = CURATED_COLORS.findIndex(
+          (c) => c.toLowerCase() === p.color.toLowerCase()
+        );
+        const nextColor = CURATED_COLORS[(currentIdx + 1) % CURATED_COLORS.length];
+        return { ...p, color: nextColor };
+      })
+    );
   };
 
   const removeParticipant = (id: string) => {
@@ -293,6 +330,7 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
     setRawOcrText('');
     setCurrency('RM');
     setParticipants(SAMPLE_PARTICIPANTS);
+    setRoundingWinnerId(null);
     setStep(1);
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -329,11 +367,14 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
         deleteFee,
         addParticipant,
         removeParticipant,
+        updateParticipantColor,
         toggleItemAssignment,
         assignItemToAll,
         clearItemAssignments,
         resolveDiscrepancy,
         resetAll,
+        roundingWinnerId,
+        setRoundingWinnerId,
         calculation,
       }}
     >

@@ -18,6 +18,7 @@ import {
   Percent,
   DollarSign,
   ChevronRight,
+  ChevronDown,
   Layers,
   HelpCircle,
   Eye,
@@ -491,20 +492,23 @@ export function ReceiptEditor() {
                     </div>
 
                     {/* Compounding Toggle (Subtotal vs Subtotal+SVC) */}
-                    <select
-                      value={fee.appliesTo}
-                      onChange={(e) =>
-                        updateFee(fee.id, {
-                          appliesTo: e.target.value as 'subtotal' | 'subtotal_plus_service',
-                        })
-                      }
-                      aria-label="Compound calculation base"
-                      className="bg-white border border-[#D9CDB8] rounded-md px-2 py-1 text-xs text-[#57534E] font-medium"
-                      title="Compound calculation base"
-                    >
-                      <option value="subtotal">On Subtotal</option>
-                      <option value="subtotal_plus_service">On Subtotal + Svc</option>
-                    </select>
+                    <div className="relative inline-flex items-center">
+                      <select
+                        value={fee.appliesTo}
+                        onChange={(e) =>
+                          updateFee(fee.id, {
+                            appliesTo: e.target.value as 'subtotal' | 'subtotal_plus_service',
+                          })
+                        }
+                        aria-label="Compound calculation base"
+                        className="appearance-none bg-white border border-[#D9CDB8] rounded-md pl-2.5 pr-7 py-1 text-xs text-[#57534E] font-medium hover:border-[#A89F8F] focus:outline-none focus:ring-1 focus:ring-[#1C1917] cursor-pointer"
+                        title="Compound calculation base"
+                      >
+                        <option value="subtotal">On Subtotal</option>
+                        <option value="subtotal_plus_service">On Subtotal + Svc</option>
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 text-[#78716C] absolute right-2 pointer-events-none" />
+                    </div>
 
                     {/* Discount check */}
                     <label className="flex items-center gap-1.5 text-xs text-[#57534E] cursor-pointer">

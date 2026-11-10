@@ -16,11 +16,17 @@ export function fromCents(cents: number): number {
   return cents / 100;
 }
 
+export function isRoundingFee(fee: ExtraFee): boolean {
+  const name = fee.name.toLowerCase();
+  return name.includes('rounding') || name.includes('round adj') || name.includes('round diff') || name.includes('round');
+}
+
 export function calculateReceiptSplit(
   items: LineItem[],
   fees: ExtraFee[],
   participants: Participant[],
-  targetGrandTotal?: number | null
+  targetGrandTotal?: number | null,
+  roundingWinnerId?: string | null
 ): CalculationResult {
   // 1. Calculate raw items subtotal in cents
   const itemsSubtotalCents = items.reduce((acc, item) => {
@@ -138,7 +144,7 @@ export function calculateReceiptSplit(
     const count = assignedIds.length;
     const itemTotalCents = toCents(item.totalPrice);
     const baseShareCents = Math.floor(itemTotalCents / count);
-    let remainderCents = itemTotalCents % count;
+    const remainderCents = itemTotalCents % count;
 
     assignedIds.forEach((pid, idx) => {
       if (!breakdowns[pid]) return;
@@ -159,8 +165,10 @@ export function calculateReceiptSplit(
     });
   }
 
-  // Distribute fees proportionally
+  // Distribute fees proportionally (or allocate rounding fee to lottery winner)
   const assignedSubtotal = fromCents(totalAssignedSubtotalCents);
+  const hasValidLotteryWinner =
+    Boolean(roundingWinnerId) && participants.some((p) => p.id === roundingWinnerId);
 
   for (const p of participants) {
     const b = breakdowns[p.id];
@@ -168,9 +176,13 @@ export function calculateReceiptSplit(
 
     for (const cf of computedFees) {
       const feeCents = toCents(cf.computedAmount);
+      const isRnd = isRoundingFee(cf.fee);
       let personalFeeShareCents = 0;
 
-      if (assignedSubtotal > 0) {
+      if (isRnd && hasValidLotteryWinner) {
+        // The lottery winner absorbs the entire rounding charge!
+        personalFeeShareCents = p.id === roundingWinnerId ? feeCents : 0;
+      } else if (assignedSubtotal > 0) {
         // Proportion based on personal raw subtotal
         personalFeeShareCents = Math.round(
           (feeCents * toCents(b.rawSubtotal)) / totalAssignedSubtotalCents
@@ -197,6 +209,9 @@ export function calculateReceiptSplit(
 
     b.totalFees = fromCents(personalTotalFeeCents);
     b.grandTotal = fromCents(toCents(b.rawSubtotal) + personalTotalFeeCents);
+    if (p.id === roundingWinnerId) {
+      b.isLotteryWinner = true;
+    }
   }
 
   // 6. Penny Rounding Protection
@@ -208,27 +223,45 @@ export function calculateReceiptSplit(
   const centDifference = finalTargetTotalCents - totalAllocatedCents;
 
   if (centDifference !== 0 && participants.length > 0) {
-    // Sort participants by raw subtotal descending (largest shareholders get/absorb penny adjustments)
-    const sortedParticipants = [...participants].sort((a, b) => {
-      return (
-        toCents(breakdowns[b.id].rawSubtotal) -
-        toCents(breakdowns[a.id].rawSubtotal)
-      );
-    });
+    if (hasValidLotteryWinner && roundingWinnerId) {
+      // Lottery winner absorbs the penny difference
+      const b = breakdowns[roundingWinnerId];
+      b.centsAdjustment += fromCents(centDifference);
+      b.grandTotal = fromCents(toCents(b.grandTotal) + centDifference);
+      b.isLotteryWinner = true;
+    } else {
+      // Sort participants by raw subtotal descending (largest shareholders get/absorb penny adjustments)
+      const sortedParticipants = [...participants].sort((a, b) => {
+        return (
+          toCents(breakdowns[b.id].rawSubtotal) -
+          toCents(breakdowns[a.id].rawSubtotal)
+        );
+      });
 
-    const step = centDifference > 0 ? 1 : -1;
-    let remainingAdjustment = Math.abs(centDifference);
-    let pIdx = 0;
+      const step = centDifference > 0 ? 1 : -1;
+      let remainingAdjustment = Math.abs(centDifference);
+      let pIdx = 0;
 
-    while (remainingAdjustment > 0) {
-      const pid = sortedParticipants[pIdx % sortedParticipants.length].id;
-      const b = breakdowns[pid];
-      b.centsAdjustment += fromCents(step);
-      b.grandTotal = fromCents(toCents(b.grandTotal) + step);
-      remainingAdjustment -= 1;
-      pIdx++;
+      while (remainingAdjustment > 0) {
+        const pid = sortedParticipants[pIdx % sortedParticipants.length].id;
+        const b = breakdowns[pid];
+        b.centsAdjustment += fromCents(step);
+        b.grandTotal = fromCents(toCents(b.grandTotal) + step);
+        remainingAdjustment -= 1;
+        pIdx++;
+      }
     }
   }
+
+  // Calculate net rounding amount across the whole receipt
+  let totalRoundingCents = centDifference;
+  for (const cf of computedFees) {
+    if (isRoundingFee(cf.fee)) {
+      const amt = toCents(cf.computedAmount);
+      totalRoundingCents += cf.fee.isDiscount ? -amt : amt;
+    }
+  }
+  const roundingTotal = fromCents(totalRoundingCents);
 
   return {
     itemsSubtotal,
@@ -240,6 +273,8 @@ export function calculateReceiptSplit(
     unassignedItemIds,
     allAssigned,
     breakdowns,
+    roundingTotal,
+    roundingWinnerId: hasValidLotteryWinner ? roundingWinnerId : null,
   };
 }
 

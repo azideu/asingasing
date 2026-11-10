@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useReceipt } from '@/context/ReceiptContext';
 import { formatCurrency } from '@/lib/calculator';
 import {
@@ -21,6 +21,7 @@ export function ParticipantMatrix() {
     participants,
     addParticipant,
     removeParticipant,
+    updateParticipantColor,
     toggleItemAssignment,
     assignItemToAll,
     clearItemAssignments,
@@ -30,11 +31,24 @@ export function ParticipantMatrix() {
   } = useReceipt();
 
   const [newPersonName, setNewPersonName] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleAddPerson = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPersonName.trim()) return;
-    addParticipant(newPersonName);
+    const trimmed = newPersonName.trim();
+    if (!trimmed) {
+      setNameError('Please enter a name');
+      inputRef.current?.focus();
+      return;
+    }
+    if (participants.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) {
+      setNameError('A person with this name already exists');
+      inputRef.current?.focus();
+      return;
+    }
+    setNameError(null);
+    addParticipant(trimmed);
     setNewPersonName('');
   };
 
@@ -98,22 +112,43 @@ export function ParticipantMatrix() {
           </div>
 
           {/* Add participant input form */}
-          <form onSubmit={handleAddPerson} className="flex items-center gap-2">
-            <input
-              type="text"
-              value={newPersonName}
-              onChange={(e) => setNewPersonName(e.target.value)}
-              placeholder="Add person (e.g. Kenji)"
-              className="bg-[#FAF7F2] border border-[#D9CDB8] rounded-xl px-3 py-1.5 text-xs text-[#1C1917] placeholder:text-[#A8A29E] focus:bg-white focus:border-[#1C1917] outline-none w-44"
-            />
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1 bg-[#1C1917] text-white px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-[#332E2B] transition-colors cursor-pointer shadow-2xs"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>Add</span>
-            </button>
-          </form>
+          <div className="flex flex-col items-start sm:items-end">
+            <form onSubmit={handleAddPerson} className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={newPersonName}
+                onChange={(e) => {
+                  setNewPersonName(e.target.value);
+                  if (nameError) setNameError(null);
+                }}
+                placeholder="Add person (e.g. Kenji)"
+                aria-invalid={!!nameError}
+                aria-describedby={nameError ? 'name-input-error' : undefined}
+                className={`bg-[#FAF7F2] border rounded-xl px-3 py-1.5 text-xs text-[#1C1917] placeholder:text-[#A8A29E] focus:bg-white outline-none w-44 transition-all ${
+                  nameError
+                    ? 'border-[#C53030] focus:border-[#C53030] ring-2 ring-[#C53030]/15'
+                    : 'border-[#D9CDB8] focus:border-[#1C1917]'
+                }`}
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1 bg-[#1C1917] text-white px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-[#332E2B] transition-colors cursor-pointer shadow-2xs active:scale-95"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Add</span>
+              </button>
+            </form>
+            {nameError && (
+              <p
+                id="name-input-error"
+                className="text-[11px] text-[#C53030] font-medium flex items-center gap-1 mt-1 animate-fadeIn"
+              >
+                <AlertCircle className="w-3 h-3 shrink-0" />
+                <span>{nameError}</span>
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Participant Chips with Live Subtotal Previews */}
@@ -127,12 +162,16 @@ export function ParticipantMatrix() {
                 key={p.id}
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#E5DDCF] bg-[#FAF7F2] text-xs shadow-2xs"
               >
-                <div
-                  className="w-5 h-5 rounded-full text-white font-bold flex items-center justify-center text-xs font-mono shadow-xs"
+                <button
+                  type="button"
+                  onClick={() => updateParticipantColor(p.id)}
+                  title={`Click to change ${p.name}'s color`}
+                  aria-label={`Change color for ${p.name}`}
+                  className="w-5 h-5 rounded-full text-white font-bold flex items-center justify-center text-xs font-mono shadow-xs hover:scale-110 active:scale-95 transition-transform cursor-pointer"
                   style={{ backgroundColor: p.color }}
                 >
                   {p.avatarLetter}
-                </div>
+                </button>
                 <span className="font-semibold text-[#1C1917]">{p.name}</span>
                 <span className="font-mono text-[#78716C] text-xs tabular-numbers font-medium">
                   {formatCurrency(runningTotal, currency)}

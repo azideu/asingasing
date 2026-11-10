@@ -74,3 +74,28 @@ body {
   background: #E8D5B5;
   color: #1C1917;
 }
+
+/* Print and PDF Optimization */
+@media print {
+  @page {
+    margin: 1cm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #1C1917 !important;
+    font-size: 10pt;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
