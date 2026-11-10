@@ -31,6 +31,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#121110",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -41,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased dark bg-[#121110]`}
     >
       <body className="min-h-full flex flex-col bg-[#121110] text-[#F5EFE6] selection:bg-[#D4A373] selection:text-[#121110]">
         {children}

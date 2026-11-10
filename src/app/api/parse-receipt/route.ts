@@ -255,16 +255,48 @@ export async function POST(req: NextRequest) {
     // 7. Parse and Validate AI output with Zod
     let rawJson: unknown;
     try {
-      rawJson = JSON.parse(rawText);
+      // Strip markdown code fences if present e.g. ```json ... ```
+      const cleanedText = rawText
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+      rawJson = JSON.parse(cleanedText);
     } catch {
-      console.error('Failed to parse Gemini JSON:', rawText);
-      return NextResponse.json(
-        { error: 'Failed to parse AI response into structured receipt data.' },
-        { status: 500 }
-      );
+      // Fallback: extract JSON structure with regex if wrapped in conversational text
+      const match = rawText.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+      if (match) {
+        try {
+          rawJson = JSON.parse(match[1]);
+        } catch {
+          // ignore
+        }
+      }
+
+      if (!rawJson) {
+        console.error('Failed to parse Gemini JSON:', rawText);
+        return NextResponse.json(
+          { error: 'Failed to parse AI response into structured receipt data.' },
+          { status: 500 }
+        );
+      }
     }
 
-    const validationResult = GeminiResponseSchema.safeParse(rawJson);
+    // Unwrap root if Gemini wrapped it in an array, { receipt: ... }, or { data: ... }
+    let rootPayload: Record<string, unknown> = {};
+    if (Array.isArray(rawJson)) {
+      rootPayload = { items: rawJson };
+    } else if (rawJson && typeof rawJson === 'object') {
+      const obj = rawJson as Record<string, unknown>;
+      if (obj.receipt && typeof obj.receipt === 'object') {
+        rootPayload = obj.receipt as Record<string, unknown>;
+      } else if (obj.data && typeof obj.data === 'object') {
+        rootPayload = obj.data as Record<string, unknown>;
+      } else {
+        rootPayload = obj;
+      }
+    }
+
+    const validationResult = GeminiResponseSchema.safeParse(rootPayload);
     if (!validationResult.success) {
       console.error('Gemini response schema validation failed:', validationResult.error);
       return NextResponse.json(

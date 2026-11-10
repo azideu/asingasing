@@ -23,6 +23,11 @@
   --font-serif: var(--font-serif), Georgia, serif;
 }
 
+html {
+  background-color: #121110;
+  color-scheme: dark;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -83,9 +88,12 @@ body {
     size: auto;
   }
 
+  html,
   body {
     background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #1C1917 !important;
+    color-scheme: light !important;
     font-size: 10pt;
   }
 

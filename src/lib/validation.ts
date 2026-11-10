@@ -36,28 +36,80 @@ export const StoredReceiptStateSchema = z.object({
   receiptImage: z.string().nullable().optional(),
 });
 
+// Helper functions for safe AI output coercion
+const coerceNumber = z.preprocess((val) => {
+  if (val === null || val === undefined || val === '') return undefined;
+  if (typeof val === 'number') return isNaN(val) ? undefined : val;
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/[^0-9.-]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? undefined : num;
+  }
+  return undefined;
+}, z.number().optional());
+
+const coerceQuantity = z.preprocess((val) => {
+  if (val === null || val === undefined || val === '') return 1;
+  if (typeof val === 'number') return isNaN(val) || val <= 0 ? 1 : Math.round(val);
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/[^0-9.-]/g, '');
+    const num = parseInt(cleaned, 10);
+    return isNaN(num) || num <= 0 ? 1 : num;
+  }
+  return 1;
+}, z.number().default(1));
+
+const coerceBoolean = z.preprocess((val) => {
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'string') {
+    const lower = val.trim().toLowerCase();
+    return lower === 'true' || lower === 'yes' || lower === '1';
+  }
+  if (typeof val === 'number') return val === 1;
+  return false;
+}, z.boolean().default(false));
+
+const coerceFeeType = z.preprocess((val) => {
+  if (typeof val === 'string') {
+    const lower = val.toLowerCase().trim();
+    if (lower.includes('percent') || lower.includes('%')) return 'percent';
+    if (lower.includes('fix') || lower.includes('amt') || lower.includes('curr')) return 'fixed';
+  }
+  return 'percent';
+}, z.enum(['percent', 'fixed']).default('percent'));
+
+const coerceAppliesTo = z.preprocess((val) => {
+  if (typeof val === 'string') {
+    const lower = val.toLowerCase().trim();
+    if (lower.includes('service') || lower.includes('plus') || lower.includes('svc')) {
+      return 'subtotal_plus_service';
+    }
+  }
+  return 'subtotal';
+}, z.enum(['subtotal', 'subtotal_plus_service']).default('subtotal'));
+
 export const GeminiRawItemSchema = z.object({
-  name: z.string().default('Item'),
-  qty: z.coerce.number().optional().default(1),
-  unitPrice: z.coerce.number().optional(),
-  totalPrice: z.coerce.number().optional(),
-  notes: z.string().optional(),
+  name: z.preprocess((val) => (val === null || val === undefined ? 'Item' : String(val).trim()), z.string().default('Item')),
+  qty: coerceQuantity,
+  unitPrice: coerceNumber,
+  totalPrice: coerceNumber,
+  notes: z.preprocess((val) => (val === null || val === undefined ? undefined : String(val).trim()), z.string().optional()),
 });
 
 export const GeminiRawFeeSchema = z.object({
-  name: z.string().default('Fee'),
-  type: z.enum(['percent', 'fixed']).optional().default('percent'),
-  value: z.coerce.number().optional().default(0),
-  printedAmount: z.coerce.number().optional(),
-  appliesTo: z.enum(['subtotal', 'subtotal_plus_service']).optional().default('subtotal'),
-  isDiscount: z.boolean().optional().default(false),
+  name: z.preprocess((val) => (val === null || val === undefined ? 'Fee' : String(val).trim()), z.string().default('Fee')),
+  type: coerceFeeType,
+  value: coerceNumber,
+  printedAmount: coerceNumber,
+  appliesTo: coerceAppliesTo,
+  isDiscount: coerceBoolean,
 });
 
 export const GeminiResponseSchema = z.object({
-  items: z.array(GeminiRawItemSchema).optional().default([]),
-  fees: z.array(GeminiRawFeeSchema).optional().default([]),
-  subtotal: z.coerce.number().optional(),
-  grandTotal: z.coerce.number().optional(),
+  items: z.preprocess((val) => (Array.isArray(val) ? val : []), z.array(GeminiRawItemSchema).default([])),
+  fees: z.preprocess((val) => (Array.isArray(val) ? val : []), z.array(GeminiRawFeeSchema).default([])),
+  subtotal: coerceNumber,
+  grandTotal: coerceNumber,
 });
 
 export const ReceiptSchema = z.object({

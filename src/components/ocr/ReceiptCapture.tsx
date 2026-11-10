@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useReceipt } from '@/context/ReceiptContext';
 import { preprocessImage, parseReceiptText, PreprocessOptions } from '@/lib/ocr';
 import {
@@ -51,16 +51,20 @@ export function ReceiptCapture() {
   const [showPasteModal, setShowPasteModal] = useState<boolean>(false);
   const [manualText, setManualText] = useState<string>('');
   const [showKeyModal, setShowKeyModal] = useState<boolean>(false);
-  const [customApiKey, setCustomApiKey] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        return localStorage.getItem(GEMINI_LOCAL_KEY) || localStorage.getItem('betsubetsu_gemini_key') || '';
-      } catch {
-        return '';
+  const [customApiKey, setCustomApiKey] = useState<string>('');
+
+  // Hydrate custom API key from localStorage after mount to prevent SSR hydration mismatch
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(GEMINI_LOCAL_KEY) || localStorage.getItem('betsubetsu_gemini_key') || '';
+      if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCustomApiKey(stored);
       }
+    } catch {
+      // ignore
     }
-    return '';
-  });
+  }, []);
 
   // Processing state
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -409,7 +413,7 @@ export function ReceiptCapture() {
                 <KeyRound className="w-3.5 h-3.5 text-[#A89F91]" />
                 <span>
                   Gemini API Key:{' '}
-                  <strong className="text-[#F5EFE6]">
+                  <strong suppressHydrationWarning className="text-[#F5EFE6]">
                     {customApiKey ? 'Custom key active' : 'Server default'}
                   </strong>
                 </span>
@@ -458,7 +462,9 @@ export function ReceiptCapture() {
                       className="inline-flex items-center gap-1 text-xs text-[#A89F91] hover:text-[#F5EFE6] hover:underline cursor-pointer"
                     >
                       <KeyRound className="w-3 h-3" />
-                      {customApiKey ? 'Custom key active' : 'API Key Settings'}
+                      <span suppressHydrationWarning>
+                        {customApiKey ? 'Custom key active' : 'API Key Settings'}
+                      </span>
                     </button>
                   </div>
                   <p className="text-xs text-[#A89F91] leading-relaxed pt-1">
