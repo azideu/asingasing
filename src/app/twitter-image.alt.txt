@@ -1,1 +1,1 @@
-AsingAsing — Midnight Ledger preview showing shared restaurant dishes, proportional 10% service charge and 6% SST distribution, and balanced per-person totals to the exact cent.
+AsingAsing bill split preview for a Q Bistro dinner of RM 78.10 shared between Akari, Monmon, Alin, and Kai, including 10% service charge, 6% SST, and 5-cent rounding.

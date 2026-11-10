@@ -29,7 +29,7 @@ const siteUrl =
       : "https://asingasing.vercel.app");
 
 const description =
-  "Scan receipts with client-side OCR, verify line items, assign shared dishes, and proportionally distribute service charge and tax to the exact cent.";
+  "Take a photo of a restaurant receipt in your browser, mark who shared each dish, and get everyone's total with tax, service charge, and rounding scaled to what they ordered.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
