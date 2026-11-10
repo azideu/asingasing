@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FAF7F2;
-  --foreground: #1C1917;
-  --paper-bg: #FAF7F2;
-  --paper-card: #FFFFFF;
-  --paper-muted: #F3ECE1;
-  --ink-primary: #1C1917;
-  --ink-secondary: #57534E;
-  --ink-tertiary: #8C827A;
-  --ink-border: #E5DDCF;
-  --accent-vermilion: #C53030;
-  --accent-emerald: #1B6B38;
-  --accent-indigo: #1A2D42;
+  --background: #121110;
+  --foreground: #F5EFE6;
+  --paper-bg: #121110;
+  --paper-card: #1C1A17;
+  --paper-muted: #171513;
+  --ink-primary: #F5EFE6;
+  --ink-secondary: #A89F91;
+  --ink-tertiary: #7D7569;
+  --ink-border: #2E2A24;
+  --accent-vermilion: #E05353;
+  --accent-emerald: #2ECC71;
+  --accent-indigo: #2D3A4B;
 }
 
 @theme inline {
@@ -43,19 +43,19 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F3ECE1;
+  background: #171513;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C4B9A7;
+  background: #3D372F;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9E917D;
+  background: #544C41;
 }
 
 /* Perforated receipt paper border */
 .perforated-edge {
-  background-image: radial-gradient(#FAF7F2 6px, transparent 6px);
+  background-image: radial-gradient(#121110 6px, transparent 6px);
   background-size: 16px 16px;
   background-position: -8px -8px;
 }
@@ -72,8 +72,8 @@ body {
 }
 
 ::selection {
-  background: #E8D5B5;
-  color: #1C1917;
+  background: #D4A373;
+  color: #121110;
 }
 
 /* Print and PDF Optimization */

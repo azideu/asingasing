@@ -40,7 +40,7 @@ export function StepNavigation() {
     <>
       {/* Desktop / Tablet Stepper Header */}
       <nav aria-label="Receipt flow steps" className="w-full max-w-6xl mx-auto px-4 pt-4 pb-2 hidden md:block print:hidden">
-        <div className="grid grid-cols-4 gap-2 bg-[#F3ECE1]/70 p-1.5 rounded-xl border border-[#E5DDCF]">
+        <div className="grid grid-cols-4 gap-2 bg-[#171513] p-1.5 rounded-xl border border-[#2E2A24]">
           {STEPS.map((s) => {
             const isActive = step === s.step;
             const isCompleted = step > s.step;
@@ -51,21 +51,21 @@ export function StepNavigation() {
                 onClick={() => setStep(s.step)}
                 aria-label={`Step ${s.step}: ${s.label}`}
                 aria-current={isActive ? 'step' : undefined}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917] ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6] ${
                   isActive
-                    ? 'bg-white shadow-xs border border-[#D9CDB8] text-[#1C1917]'
+                    ? 'bg-[#1C1A17] shadow-xs border border-[#3D372F] text-[#F5EFE6]'
                     : isCompleted
-                    ? 'text-[#57534E] hover:bg-white/50'
-                    : 'text-[#78716C] hover:text-[#1C1917]'
+                    ? 'text-[#A89F91] hover:bg-[#1C1A17]/60'
+                    : 'text-[#7D7569] hover:text-[#F5EFE6]'
                 }`}
               >
                 <div
                   className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
                     isActive
-                      ? 'bg-[#1C1917] text-white'
+                      ? 'bg-[#F5EFE6] text-[#121110]'
                       : isCompleted
-                      ? 'bg-[#1B6B38] text-white'
-                      : 'bg-[#E5DDCF] text-[#57534E]'
+                      ? 'bg-[#2ECC71] text-[#121110]'
+                      : 'bg-[#2E2A24] text-[#A89F91]'
                   }`}
                 >
                   {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : s.step}
@@ -74,10 +74,10 @@ export function StepNavigation() {
                   <div className="text-xs font-semibold truncate flex items-center gap-1.5">
                     {s.label}
                     {s.step === 3 && calculation.unassignedItemIds.length > 0 && (
-                      <span className="w-2 h-2 rounded-full bg-[#C53030]" aria-label="Items pending assignment" />
+                      <span className="w-2 h-2 rounded-full bg-[#E05353]" aria-label="Items pending assignment" />
                     )}
                   </div>
-                  <div className="text-xs text-[#78716C] truncate">{s.desc}</div>
+                  <div className="text-xs text-[#7D7569] truncate">{s.desc}</div>
                 </div>
               </button>
             );
@@ -86,19 +86,19 @@ export function StepNavigation() {
       </nav>
 
       {/* Mobile Sticky Bottom Navigation Bar */}
-      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-t border-[#E5DDCF] px-4 py-2.5 md:hidden print:hidden">
+      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-40 bg-[#121110]/95 backdrop-blur-md border-t border-[#2E2A24] px-4 py-2.5 md:hidden print:hidden">
         <div className="max-w-md mx-auto flex items-center justify-between gap-2">
           {step > 1 ? (
             <button
               onClick={handlePrev}
               aria-label="Go to previous step"
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl border border-[#E5DDCF] bg-white text-xs font-semibold text-[#57534E] active:bg-[#F3ECE1] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl border border-[#2E2A24] bg-[#1C1A17] text-xs font-semibold text-[#A89F91] active:bg-[#26231F] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
             </button>
           ) : (
-            <div className="text-xs text-[#78716C] font-mono px-2 min-h-[44px] flex items-center">Step 1 of 4</div>
+            <div className="text-xs text-[#7D7569] font-mono px-2 min-h-[44px] flex items-center">Step 1 of 4</div>
           )}
 
           {/* Step Pill Icons with 44px Touch Targets */}
@@ -109,15 +109,15 @@ export function StepNavigation() {
                 onClick={() => setStep(s.step)}
                 aria-label={`Go to Step ${s.step}: ${s.label}`}
                 aria-current={step === s.step ? 'step' : undefined}
-                className="w-11 h-11 flex items-center justify-center cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+                className="w-11 h-11 flex items-center justify-center cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
               >
                 <span
                   className={`w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-mono font-bold transition-all ${
                     step === s.step
-                      ? 'bg-[#1C1917] text-white ring-2 ring-[#1C1917]/20 scale-105'
+                      ? 'bg-[#F5EFE6] text-[#121110] ring-2 ring-[#F5EFE6]/20 scale-105'
                       : step > s.step
-                      ? 'bg-[#1B6B38] text-white'
-                      : 'bg-[#E5DDCF] text-[#57534E]'
+                      ? 'bg-[#2ECC71] text-[#121110]'
+                      : 'bg-[#2E2A24] text-[#A89F91]'
                   }`}
                 >
                   {s.step}
@@ -131,17 +131,17 @@ export function StepNavigation() {
               onClick={handleNext}
               disabled={!canGoNext()}
               aria-label="Go to next step"
-              className={`inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917] ${
+              className={`inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6] ${
                 canGoNext()
-                  ? 'bg-[#1C1917] text-white active:scale-95 hover:bg-[#332E2B]'
-                  : 'bg-[#E5DDCF] text-[#78716C] cursor-not-allowed opacity-75'
+                  ? 'bg-[#F5EFE6] text-[#121110] active:scale-95 hover:bg-[#E6DDD0]'
+                  : 'bg-[#2E2A24] text-[#7D7569] cursor-not-allowed opacity-60'
               }`}
             >
               <span>Next</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
-            <div className="text-xs font-semibold text-[#1B6B38] flex items-center gap-1 min-h-[44px] px-2">
+            <div className="text-xs font-semibold text-[#2ECC71] flex items-center gap-1 min-h-[44px] px-2">
               <CheckCircle2 className="w-4 h-4" /> Ready!
             </div>
           )}

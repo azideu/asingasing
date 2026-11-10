@@ -127,12 +127,12 @@ export function ReceiptSummary() {
       </div>
 
       {/* On-screen Header bar (Hidden in print/PDF) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E5DDCF] print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#2E2A24] print:hidden">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1C1917] font-serif">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F5EFE6] font-serif">
             Summary &amp; Settle
           </h2>
-          <p className="text-xs text-[#78716C]">
+          <p className="text-xs text-[#7D7569]">
             Exact per-person shares with proportional tax and service distribution.
           </p>
         </div>
@@ -141,7 +141,7 @@ export function ReceiptSummary() {
           <button
             onClick={handlePrint}
             aria-label="Print receipt slip"
-            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg border border-[#D9CDB8] bg-white text-xs font-medium text-[#1C1917] hover:bg-[#FAF7F2] transition-colors cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg border border-[#3D372F] bg-[#1C1A17] text-xs font-medium text-[#F5EFE6] hover:bg-[#26231F] transition-colors cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
             title="Print receipt"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -151,11 +151,11 @@ export function ReceiptSummary() {
           <button
             onClick={handleCopy}
             aria-label="Copy formatted breakdown for WhatsApp or Telegram"
-            className="inline-flex items-center gap-1.5 bg-[#1C1917] text-white px-4 py-2 min-h-[40px] rounded-lg text-xs font-semibold hover:bg-[#332E2B] transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+            className="inline-flex items-center gap-1.5 bg-[#F5EFE6] text-[#121110] px-4 py-2 min-h-[40px] rounded-lg text-xs font-semibold hover:bg-[#E6DDD0] transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <Check className="w-3.5 h-3.5 text-[#2ECC71]" />
                 <span>Copied to Clipboard!</span>
               </>
             ) : (
@@ -170,9 +170,9 @@ export function ReceiptSummary() {
 
       {/* Discrepancy warning if any items still unassigned (Hidden in print/PDF) */}
       {!calculation.allAssigned && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 px-4 flex items-center justify-between text-xs text-amber-900 print:hidden">
+        <div className="bg-[#201414] border border-[#E05353]/40 rounded-xl p-3 px-4 flex items-center justify-between text-xs text-[#F5EFE6] print:hidden">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-[#E05353] shrink-0" />
             <span>
               {calculation.unassignedItemIds.length} item(s) are not assigned to anyone yet. Go back to Step 3 to tag them.
             </span>
@@ -180,7 +180,7 @@ export function ReceiptSummary() {
           <button
             onClick={() => setStep(3)}
             aria-label="Assign unassigned items now"
-            className="text-amber-800 font-bold underline cursor-pointer p-1"
+            className="text-[#E05353] font-bold underline cursor-pointer p-1"
           >
             Assign Now
           </button>
@@ -188,19 +188,19 @@ export function ReceiptSummary() {
       )}
 
       {/* Master Receipt Total Stamp Banner */}
-      <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:p-3 print:my-1 print-break-inside-avoid print:border-[#D9CDB8]">
+      <div className="bg-[#1C1A17] rounded-2xl border border-[#2E2A24] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:p-3 print:my-1 print-break-inside-avoid print:border-[#D9CDB8]">
         <div className="space-y-1">
-          <span className="stamp-badge text-xs text-[#1B6B38] bg-[#EBF5EE] border border-[#C6E6D1] px-2.5 py-1">
+          <span className="stamp-badge text-xs text-[#2ECC71] bg-[#142318] border border-[#2ECC71]/30 px-2.5 py-1">
             ★ VERIFIED &amp; CENT-BALANCED
           </span>
-          <div className="text-xs text-[#78716C] font-mono">
+          <div className="text-xs text-[#7D7569] font-mono">
             {items.length} items • {fees.length} extra charges • {participants.length} diners
           </div>
         </div>
 
         <div className="text-right">
-          <span className="text-xs font-mono uppercase text-[#78716C]">Grand Total</span>
-          <div className="text-3xl font-serif font-bold text-[#1C1917] tracking-tight tabular-numbers">
+          <span className="text-xs font-mono uppercase text-[#7D7569]">Grand Total</span>
+          <div className="text-3xl font-serif font-bold text-[#F5EFE6] tracking-tight tabular-numbers">
             {formatCurrency(calculation.targetGrandTotal, currency)}
           </div>
         </div>
@@ -221,7 +221,7 @@ export function ReceiptSummary() {
           return (
             <div
               key={p.id}
-              className={`bg-white rounded-2xl border shadow-xs transition-all overflow-hidden flex flex-col justify-between print-break-inside-avoid print:border-[#D9CDB8] ${b.isLotteryWinner ? 'border-[#C53030]/60 ring-1 ring-[#C53030]/20' : 'border-[#E5DDCF] hover:border-[#C4B9A7]'
+              className={`bg-[#1C1A17] rounded-2xl border shadow-xs transition-all overflow-hidden flex flex-col justify-between print-break-inside-avoid print:border-[#D9CDB8] ${b.isLotteryWinner ? 'border-[#E05353]/60 ring-1 ring-[#E05353]/20' : 'border-[#2E2A24] hover:border-[#3D372F]'
                 }`}
             >
               <div className="p-4 space-y-3 print:p-3">
@@ -236,9 +236,9 @@ export function ReceiptSummary() {
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <h4 className="text-sm font-bold text-[#1C1917]">{p.name}</h4>
+                        <h4 className="text-sm font-bold text-[#F5EFE6]">{p.name}</h4>
                       </div>
-                      <p className="text-xs text-[#78716C] font-mono">
+                      <p className="text-xs text-[#7D7569] font-mono">
                         {b.items.length} item{b.items.length === 1 ? '' : 's'} consumed
                       </p>
                     </div>
@@ -246,17 +246,17 @@ export function ReceiptSummary() {
 
                   {/* Personal Grand Total */}
                   <div className="text-right">
-                    <div className="text-xl font-bold font-mono text-[#1C1917] tabular-numbers print:text-base">
+                    <div className="text-xl font-bold font-mono text-[#F5EFE6] tabular-numbers print:text-base">
                       {formatCurrency(b.grandTotal, currency)}
                     </div>
                   </div>
                 </div>
 
                 {/* Micro Breakdown Summary */}
-                <div className="bg-[#FAF7F2] rounded-xl p-3 border border-[#E5DDCF] text-xs font-mono space-y-1.5 print:p-2 print:border-[#E5DDCF]">
-                  <div className="flex justify-between text-[#78716C]">
+                <div className="bg-[#171513] rounded-xl p-3 border border-[#2E2A24] text-xs font-mono space-y-1.5 print:p-2 print:border-[#E5DDCF]">
+                  <div className="flex justify-between text-[#7D7569]">
                     <span>Items Subtotal:</span>
-                    <span className="font-semibold text-[#1C1917] tabular-numbers">
+                    <span className="font-semibold text-[#F5EFE6] tabular-numbers">
                       {formatCurrency(b.rawSubtotal, currency)}
                     </span>
                   </div>
@@ -264,9 +264,9 @@ export function ReceiptSummary() {
                   {b.feeShares.map((fs) => {
                     if (Math.abs(fs.amount) < 0.005) return null;
                     return (
-                      <div key={fs.feeId} className="flex justify-between text-[#78716C]">
+                      <div key={fs.feeId} className="flex justify-between text-[#7D7569]">
                         <span>{fs.feeName}:</span>
-                        <span className={`font-semibold tabular-numbers ${fs.isDiscount ? 'text-[#C53030]' : 'text-[#1C1917]'}`}>
+                        <span className={`font-semibold tabular-numbers ${fs.isDiscount ? 'text-[#E05353]' : 'text-[#F5EFE6]'}`}>
                           {fs.isDiscount ? '-' : '+'}
                           {formatCurrency(fs.amount, currency)}
                         </span>
@@ -275,7 +275,7 @@ export function ReceiptSummary() {
                   })}
 
                   {Math.abs(b.centsAdjustment) >= 0.005 && (
-                    <div className="flex justify-between text-xs text-[#78716C] italic pt-0.5 border-t border-[#E5DDCF]">
+                    <div className="flex justify-between text-xs text-[#7D7569] italic pt-0.5 border-t border-[#2E2A24]">
                       <span>Penny Closure Adjustment:</span>
                       <span className="tabular-numbers">
                         {b.centsAdjustment > 0 ? '+' : ''}
@@ -292,27 +292,27 @@ export function ReceiptSummary() {
                       onClick={() => toggleExpand(p.id)}
                       aria-expanded={isExpanded}
                       aria-label={`${isExpanded ? 'Hide' : 'View'} itemized details for ${p.name}`}
-                      className="w-full flex items-center justify-between text-xs font-mono font-medium text-[#78716C] hover:text-[#1C1917] py-1.5 cursor-pointer print:hidden"
+                      className="w-full flex items-center justify-between text-xs font-mono font-medium text-[#7D7569] hover:text-[#F5EFE6] py-1.5 cursor-pointer print:hidden"
                     >
                       <span>{isExpanded ? 'Hide Item Details' : 'View Item Details'}</span>
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
 
                     <div
-                      className={`mt-2 space-y-1 pt-2 border-t border-[#F3ECE1] text-xs font-mono ${isExpanded ? 'block' : 'hidden print:block'
+                      className={`mt-2 space-y-1 pt-2 border-t border-[#2E2A24] text-xs font-mono ${isExpanded ? 'block' : 'hidden print:block'
                         }`}
                     >
                       {b.items.map((it, idx) => (
-                        <div key={idx} className="flex justify-between text-[#57534E]">
+                        <div key={idx} className="flex justify-between text-[#A89F91]">
                           <span className="truncate max-w-[200px]">
                             {it.itemName}{' '}
                             {it.shareRatio < 1 && (
-                              <span className="text-[#78716C] text-xs">
+                              <span className="text-[#7D7569] text-xs">
                                 ({Math.round(it.shareRatio * 100)}%)
                               </span>
                             )}
                           </span>
-                          <span className="font-semibold tabular-numbers">
+                          <span className="font-semibold tabular-numbers text-[#F5EFE6]">
                             {formatCurrency(it.shareAmount, currency)}
                           </span>
                         </div>
@@ -327,8 +327,8 @@ export function ReceiptSummary() {
       </div>
 
       {/* Payment Note Option & Text Preview Box (Screen only) */}
-      <div className="bg-white rounded-2xl border border-[#E5DDCF] p-4 sm:p-5 shadow-xs space-y-3 print:hidden">
-        <h3 className="text-xs font-mono font-bold text-[#1C1917] uppercase tracking-wider">
+      <div className="bg-[#1C1A17] rounded-2xl border border-[#2E2A24] p-4 sm:p-5 shadow-xs space-y-3 print:hidden">
+        <h3 className="text-xs font-mono font-bold text-[#F5EFE6] uppercase tracking-wider">
           Add Payment Instructions (Optional)
         </h3>
         <input
@@ -336,21 +336,21 @@ export function ReceiptSummary() {
           value={paymentNote}
           onChange={(e) => setPaymentNote(e.target.value)}
           placeholder="e.g. QR Me"
-          className="w-full bg-[#FAF7F2] border border-[#D9CDB8] rounded-xl px-3 py-2 text-xs text-[#1C1917] placeholder:text-[#A8A29E] focus:bg-white focus:border-[#1C1917] outline-none"
+          className="w-full bg-[#171513] border border-[#3D372F] rounded-xl px-3 py-2 text-xs text-[#F5EFE6] placeholder:text-[#7D7569] focus:bg-[#121110] focus:border-[#F5EFE6] outline-none"
         />
 
         {/* Text Preview */}
         <div className="pt-2">
-          <div className="flex items-center justify-between text-xs font-mono text-[#78716C] pb-1">
+          <div className="flex items-center justify-between text-xs font-mono text-[#7D7569] pb-1">
             <span>MESSAGE PREVIEW FOR GROUP CHAT</span>
             <button
               onClick={handleCopy}
-              className="text-[#1C1917] font-semibold underline cursor-pointer"
+              className="text-[#F5EFE6] font-semibold underline cursor-pointer hover:text-[#E6DDD0]"
             >
               {copied ? 'Copied!' : 'Copy Text'}
             </button>
           </div>
-          <pre className="bg-[#FAF7F2] border border-[#E5DDCF] p-3 rounded-xl text-xs font-mono text-[#57534E] whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+          <pre className="bg-[#171513] border border-[#2E2A24] p-3 rounded-xl text-xs font-mono text-[#A89F91] whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
             {generateMessageText()}
           </pre>
         </div>

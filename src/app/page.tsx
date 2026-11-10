@@ -13,7 +13,7 @@ function AppContent() {
   const { step } = useReceipt();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#1C1917] pb-20 md:pb-12">
+    <div className="min-h-screen flex flex-col bg-[#121110] text-[#F5EFE6] pb-20 md:pb-12">
       {/* Editorial Header */}
       <Header />
 
@@ -29,10 +29,10 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto py-6 border-t border-[#E5DDCF] text-center text-xs text-[#78716C] font-mono">
+      <footer className="mt-auto py-6 border-t border-[#2E2A24] text-center text-xs text-[#7D7569] font-mono">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>AsingAsing • Proportional Bill Split</span>
-          <span className="text-[#78716C]">100% Client-Side • Zero Data Stored On Servers</span>
+          <span className="text-[#7D7569]">100% Client-Side • Zero Data Stored On Servers</span>
         </div>
       </footer>
     </div>

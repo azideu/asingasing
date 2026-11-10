@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#FAF7F2",
+  themeColor: "#121110",
 };
 
 export default function RootLayout({
@@ -41,9 +41,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-[#FAF7F2] text-[#1C1917] selection:bg-[#E8D5B5]">
+      <body className="min-h-full flex flex-col bg-[#121110] text-[#F5EFE6] selection:bg-[#D4A373] selection:text-[#121110]">
         {children}
       </body>
     </html>

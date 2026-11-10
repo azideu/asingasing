@@ -10,6 +10,12 @@ import {
 } from '@/types/receipt';
 import { calculateReceiptSplit } from '@/lib/calculator';
 import { SAMPLE_PARTICIPANTS } from '@/lib/sampleReceipts';
+import {
+  StoredReceiptStateSchema,
+  LineItemSchema,
+  ExtraFeeSchema,
+  ParticipantSchema,
+} from '@/lib/validation';
 
 interface ReceiptContextType {
   step: StepType;
@@ -43,6 +49,7 @@ interface ReceiptContextType {
   toggleItemAssignment: (itemId: string, participantId: string) => void;
   assignItemToAll: (itemId: string) => void;
   clearItemAssignments: (itemId: string) => void;
+  copyAssignmentFromItem: (targetItemId: string, sourceItemId: string) => void;
   resolveDiscrepancy: () => void;
   resetAll: () => void;
 
@@ -95,16 +102,43 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('betsubetsu_session_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (parsed.items) setItems(parsed.items);
-        if (parsed.fees) setFees(parsed.fees);
-        if (parsed.participants && parsed.participants.length > 0)
-          setParticipants(parsed.participants);
-        if (parsed.targetGrandTotal !== undefined)
-          setTargetGrandTotal(parsed.targetGrandTotal);
-        if (parsed.currency) setCurrency(parsed.currency);
-        if (parsed.receiptImage) setReceiptImage(parsed.receiptImage);
-        if (parsed.step) setStep(parsed.step);
+        const validated = StoredReceiptStateSchema.safeParse(parsed);
+        if (validated.success) {
+          const data = validated.data;
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          if (data.items) setItems(data.items);
+          if (data.fees) setFees(data.fees);
+          if (data.participants && data.participants.length > 0)
+            setParticipants(data.participants);
+          if (data.targetGrandTotal !== undefined)
+            setTargetGrandTotal(data.targetGrandTotal);
+          if (data.currency) setCurrency(data.currency);
+          if (data.receiptImage) setReceiptImage(data.receiptImage);
+          if (data.step) setStep(data.step);
+        } else if (parsed && typeof parsed === 'object') {
+          // Graceful fallback: recover valid portions if schema validation failed on a single key
+          if (Array.isArray(parsed.items)) {
+            const validItems = parsed.items.filter((it: unknown) => LineItemSchema.safeParse(it).success);
+            if (validItems.length > 0) setItems(validItems);
+          }
+          if (Array.isArray(parsed.fees)) {
+            const validFees = parsed.fees.filter((f: unknown) => ExtraFeeSchema.safeParse(f).success);
+            if (validFees.length > 0) setFees(validFees);
+          }
+          if (Array.isArray(parsed.participants)) {
+            const validParts = parsed.participants.filter((p: unknown) => ParticipantSchema.safeParse(p).success);
+            if (validParts.length > 0) setParticipants(validParts);
+          }
+          if (typeof parsed.targetGrandTotal === 'number' && !isNaN(parsed.targetGrandTotal) && parsed.targetGrandTotal >= 0) {
+            setTargetGrandTotal(parsed.targetGrandTotal);
+          }
+          if (typeof parsed.currency === 'string' && parsed.currency.length > 0 && parsed.currency.length <= 10) {
+            setCurrency(parsed.currency);
+          }
+          if (parsed.step === 1 || parsed.step === 2 || parsed.step === 3 || parsed.step === 4) {
+            setStep(parsed.step);
+          }
+        }
       }
     } catch {
       // ignore JSON parse errors
@@ -298,6 +332,16 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const copyAssignmentFromItem = (targetItemId: string, sourceItemId: string) => {
+    setItems((prev) => {
+      const source = prev.find((it) => it.id === sourceItemId);
+      if (!source) return prev;
+      return prev.map((it) =>
+        it.id === targetItemId ? { ...it, assignedTo: [...source.assignedTo] } : it
+      );
+    });
+  };
+
   const resolveDiscrepancy = () => {
     const diff = calculation.discrepancy;
     if (Math.abs(diff) < 0.005) return;
@@ -379,6 +423,7 @@ export function ReceiptProvider({ children }: { children: React.ReactNode }) {
         toggleItemAssignment,
         assignItemToAll,
         clearItemAssignments,
+        copyAssignmentFromItem,
         resolveDiscrepancy,
         resetAll,
         roundingWinnerId,

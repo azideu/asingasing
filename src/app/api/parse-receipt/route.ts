@@ -1,24 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LineItem, ExtraFee, normalizeFeeWithPresets } from '@/types/receipt';
+import { GeminiResponseSchema } from '@/lib/validation';
 
-interface GeminiParsedResponse {
-  items?: Array<{
-    name: string;
-    qty?: number;
-    unitPrice?: number;
-    totalPrice?: number;
-    notes?: string;
-  }>;
-  fees?: Array<{
-    name: string;
-    type?: 'percent' | 'fixed';
-    value?: number;
-    printedAmount?: number;
-    appliesTo?: 'subtotal' | 'subtotal_plus_service';
-    isDiscount?: boolean;
-  }>;
-  subtotal?: number;
-  grandTotal?: number;
+// Rate limiter storage: IP -> { count, resetAt }
+const ipRateLimits = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+
+  // Periodic garbage collection for expired entries to prevent memory leak
+  if (ipRateLimits.size > 2000) {
+    for (const [key, record] of ipRateLimits.entries()) {
+      if (now > record.resetAt) {
+        ipRateLimits.delete(key);
+      }
+    }
+  }
+
+  const existing = ipRateLimits.get(ip);
+  if (!existing || now > existing.resetAt) {
+    ipRateLimits.set(ip, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+
+  if (existing.count >= limit) {
+    return false;
+  }
+
+  existing.count += 1;
+  return true;
 }
 
 const SYSTEM_INSTRUCTION = `You are a high-precision dining receipt parser.
@@ -79,7 +89,9 @@ Rules:
 6. Return valid JSON only, without markdown fences or additional conversational text.`;
 
 async function callGemini(model: string, apiKey: string, mimeType: string, base64Data: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const encodedModel = encodeURIComponent(model);
+  const encodedKey = encodeURIComponent(apiKey);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodedModel}:generateContent?key=${encodedKey}`;
 
   const body = {
     contents: [
@@ -114,10 +126,40 @@ async function callGemini(model: string, apiKey: string, mimeType: string, base6
   return response;
 }
 
+const MAX_BASE64_LENGTH = 10 * 1024 * 1024; // 10MB base64 string (~7.5MB raw image)
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic']);
+
 export async function POST(req: NextRequest) {
   try {
-    const { image, apiKey: clientApiKey } = await req.json();
+    // 1. IP extraction and rate limiting
+    const forwardedHeader = req.headers.get('x-forwarded-for');
+    const clientIp = forwardedHeader ? forwardedHeader.split(',')[0].trim() : (req.headers.get('x-real-ip') || '127.0.0.1');
 
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Invalid JSON request payload.' },
+        { status: 400 }
+      );
+    }
+
+    const { image, apiKey: clientApiKey } = body as { image?: unknown; apiKey?: unknown };
+
+    // 2. Rate limit: 10 req/min for server-keyed free tier; 60 req/min for user-supplied key
+    const hasCustomKey = typeof clientApiKey === 'string' && clientApiKey.trim().length > 0;
+    const rateLimit = hasCustomKey ? 60 : 10;
+    if (!checkRateLimit(clientIp, rateLimit, 60_000)) {
+      return NextResponse.json(
+        {
+          error: hasCustomKey
+            ? 'Rate limit exceeded (60 requests/minute). Please slow down.'
+            : 'Public AI rate limit reached (10 requests/minute). Please wait a moment or configure your own Gemini API key in settings.',
+        },
+        { status: 429 }
+      );
+    }
+
+    // 3. Payload validation
     if (!image || typeof image !== 'string') {
       return NextResponse.json(
         { error: 'Missing receipt image data (base64 string required)' },
@@ -125,30 +167,64 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = clientApiKey?.trim() || process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    if (image.length > MAX_BASE64_LENGTH) {
+      return NextResponse.json(
+        { error: 'Receipt image exceeds the maximum supported size of 7.5MB.' },
+        { status: 413 }
+      );
+    }
+
+    // 4. API Key Resolution and Sanity Validation
+    const resolvedApiKey = (hasCustomKey ? (clientApiKey as string).trim() : '') || process.env.GEMINI_API_KEY;
+    if (!resolvedApiKey) {
       return NextResponse.json(
         { error: 'Gemini API key is required. Please set GEMINI_API_KEY or provide a key in settings.' },
         { status: 401 }
       );
     }
 
-    // Extract mime type and base64 data
+    // Google API keys contain alphanumeric, dashes, and underscores (typically 20-100 chars)
+    if (!/^[a-zA-Z0-9_\-]{10,128}$/.test(resolvedApiKey)) {
+      return NextResponse.json(
+        { error: 'Invalid Gemini API key format.' },
+        { status: 400 }
+      );
+    }
+
+    // 5. Safe O(1) Data URL Parsing (prevents ReDoS and memory spikes)
     let mimeType = 'image/jpeg';
     let base64Data = image;
 
-    const dataUrlMatch = image.match(/^data:([^;]+);base64,(.+)$/);
-    if (dataUrlMatch) {
-      mimeType = dataUrlMatch[1];
-      base64Data = dataUrlMatch[2];
+    if (image.startsWith('data:')) {
+      const commaIdx = image.indexOf(',');
+      if (commaIdx === -1) {
+        return NextResponse.json(
+          { error: 'Invalid data URL format: missing data payload separator.' },
+          { status: 400 }
+        );
+      }
+      const header = image.slice(5, commaIdx);
+      const semiIdx = header.indexOf(';');
+      const rawMime = (semiIdx !== -1 ? header.slice(0, semiIdx) : header).toLowerCase().trim();
+      const normalizedMime = rawMime === 'image/jpg' ? 'image/jpeg' : rawMime;
+
+      if (!ALLOWED_MIME_TYPES.has(normalizedMime)) {
+        return NextResponse.json(
+          { error: `Unsupported image format (${rawMime || 'unknown'}). Supported: JPG, PNG, WEBP, HEIC.` },
+          { status: 400 }
+        );
+      }
+
+      mimeType = normalizedMime;
+      base64Data = image.slice(commaIdx + 1).trim();
     }
 
-    // Attempt with primary model gemini-3.5-flash, fallback to gemini-3.1-flash-lite if busy
-    let geminiRes = await callGemini('gemini-3.5-flash', apiKey, mimeType, base64Data);
+    // 6. Attempt with primary model gemini-3.5-flash, fallback to gemini-3.1-flash-lite if busy
+    let geminiRes = await callGemini('gemini-3.5-flash', resolvedApiKey, mimeType, base64Data);
 
     if (geminiRes.status === 503 || geminiRes.status === 429) {
       console.warn(`Primary model gemini-3.5-flash returned ${geminiRes.status}, falling back to gemini-3.1-flash-lite...`);
-      geminiRes = await callGemini('gemini-3.1-flash-lite', apiKey, mimeType, base64Data);
+      geminiRes = await callGemini('gemini-3.1-flash-lite', resolvedApiKey, mimeType, base64Data);
     }
 
     if (!geminiRes.ok) {
@@ -174,9 +250,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let parsed: GeminiParsedResponse = {};
+    // 7. Parse and Validate AI output with Zod
+    let rawJson: unknown;
     try {
-      parsed = JSON.parse(rawText);
+      rawJson = JSON.parse(rawText);
     } catch {
       console.error('Failed to parse Gemini JSON:', rawText);
       return NextResponse.json(
@@ -185,13 +262,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert items to LineItem[], strictly filtering out zero-priced items
+    const validationResult = GeminiResponseSchema.safeParse(rawJson);
+    if (!validationResult.success) {
+      console.error('Gemini response schema validation failed:', validationResult.error);
+      return NextResponse.json(
+        { error: 'AI returned an unexpected receipt format.' },
+        { status: 502 }
+      );
+    }
+
+    const parsed = validationResult.data;
+
+    // 8. Convert items to LineItem[], strictly filtering out zero-priced items
     const now = Date.now();
     const items: LineItem[] = (parsed.items || [])
       .filter((it) => {
         const qty = Math.max(1, Math.round(Number(it.qty) || 1));
         const totalPrice = Number(it.totalPrice) || (Number(it.unitPrice) || 0) * qty;
-        // Omit items with total price 0 or negative
         return totalPrice > 0;
       })
       .map((it, idx) => {
@@ -201,21 +288,21 @@ export async function POST(req: NextRequest) {
 
         return {
           id: `item-${now}-${idx}`,
-          name: it.name?.trim() || `Item #${idx + 1}`,
+          name: it.name?.trim().slice(0, 200) || `Item #${idx + 1}`,
           qty,
           unitPrice: Math.round(unitPrice * 100) / 100,
           totalPrice: Math.round(totalPrice * 100) / 100,
           assignedTo: [],
-          notes: it.notes?.trim() || undefined,
+          notes: it.notes?.trim().slice(0, 300) || undefined,
         };
       });
 
-    // Convert fees to ExtraFee[] and normalize against preset rules
+    // 9. Convert fees to ExtraFee[] and normalize against preset rules
     const fees: ExtraFee[] = (parsed.fees || []).map((rawFee, idx) => {
       const normalized = normalizeFeeWithPresets(rawFee);
       return {
         id: `fee-${now}-${idx}`,
-        name: normalized.name,
+        name: normalized.name.slice(0, 100),
         type: normalized.type,
         value: normalized.value,
         appliesTo: normalized.appliesTo,
@@ -227,8 +314,8 @@ export async function POST(req: NextRequest) {
       success: true,
       items,
       fees,
-      subtotal: parsed.subtotal ? Number(parsed.subtotal) : undefined,
-      grandTotal: parsed.grandTotal ? Number(parsed.grandTotal) : undefined,
+      subtotal: parsed.subtotal !== undefined ? Number(parsed.subtotal) : undefined,
+      grandTotal: parsed.grandTotal !== undefined ? Number(parsed.grandTotal) : undefined,
       rawOcrText: rawText,
     });
   } catch (error: unknown) {

@@ -17,6 +17,7 @@ import {
   KeyRound,
   ShieldCheck,
   Cpu,
+  ChevronDown,
 } from 'lucide-react';
 
 const GEMINI_LOCAL_KEY = 'asingasing_gemini_key';
@@ -44,6 +45,7 @@ export function ReceiptCapture() {
   const [useThreshold, setUseThreshold] = useState<boolean>(false);
   const [threshold, setThreshold] = useState<number>(140);
   const [showPreprocessControls, setShowPreprocessControls] = useState<boolean>(false);
+  const [showOfflineOptions, setShowOfflineOptions] = useState<boolean>(false);
 
   // Modals state
   const [showPasteModal, setShowPasteModal] = useState<boolean>(false);
@@ -326,17 +328,17 @@ export function ReceiptCapture() {
     <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-8">
       {/* Introduction Banner */}
       <div className="text-center space-y-3">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] font-serif">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F5EFE6] font-serif">
           Capture &amp; Parse Receipt
         </h2>
-        <p className="text-sm text-[#78716C] max-w-md mx-auto">
+        <p className="text-sm text-[#A89F91] max-w-md mx-auto">
           Snap a photo or upload an image. Gemini Vision extracts items,
           quantities, taxes, and service charges in seconds.
         </p>
       </div>
 
       {/* Main Upload Box */}
-      <div className="bg-white rounded-2xl border-2 border-dashed border-[#D9CDB8] hover:border-[#A89F8F] transition-all p-6 sm:p-8 shadow-xs">
+      <div className="bg-[#1C1A17] rounded-2xl border-2 border-dashed border-[#3D372F] hover:border-[#7D7569] transition-all p-6 sm:p-8 shadow-xs">
         <input
           ref={fileInputRef}
           type="file"
@@ -357,15 +359,15 @@ export function ReceiptCapture() {
 
         {!rawImageSrc ? (
           <div className="flex flex-col items-center justify-center text-center space-y-4 py-6">
-            <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border border-[#E5DDCF] flex items-center justify-center text-[#1C1917]">
+            <div className="w-16 h-16 rounded-full bg-[#171513] border border-[#2E2A24] flex items-center justify-center text-[#F5EFE6]">
               <UploadCloud className="w-8 h-8 stroke-[1.5]" />
             </div>
 
             <div className="space-y-1">
-              <p className="text-base font-semibold text-[#1C1917]">
+              <p className="text-base font-semibold text-[#F5EFE6]">
                 Drop your receipt image here, or browse
               </p>
-              <p className="text-xs text-[#78716C]">
+              <p className="text-xs text-[#7D7569]">
                 Supports JPEG, PNG, or WEBP from phone camera
               </p>
             </div>
@@ -374,7 +376,7 @@ export function ReceiptCapture() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 bg-[#1C1917] text-white px-5 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#332E2B] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+                className="inline-flex items-center gap-2 bg-[#F5EFE6] text-[#121110] px-5 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#E6DDD0] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
               >
                 <ImageIcon className="w-4 h-4" />
                 Upload Image
@@ -382,7 +384,7 @@ export function ReceiptCapture() {
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="inline-flex items-center gap-2 bg-white border border-[#D9CDB8] text-[#1C1917] px-5 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#FAF7F2] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+                className="inline-flex items-center gap-2 bg-[#1C1A17] border border-[#3D372F] text-[#F5EFE6] px-5 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#26231F] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
               >
                 <Camera className="w-4 h-4" />
                 Take Photo
@@ -390,10 +392,28 @@ export function ReceiptCapture() {
               <button
                 type="button"
                 onClick={() => setShowPasteModal(true)}
-                className="inline-flex items-center gap-2 bg-[#FAF7F2] border border-[#D9CDB8] text-[#57534E] hover:text-[#1C1917] px-4 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#F3ECE1] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1917]"
+                className="inline-flex items-center gap-2 bg-[#171513] border border-[#2E2A24] text-[#A89F91] hover:text-[#F5EFE6] px-4 py-3 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-[#26231F] active:scale-95 transition-all shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
               >
                 <ClipboardPaste className="w-4 h-4" />
                 Paste Text
+              </button>
+            </div>
+
+            {/* Custom Gemini API Key trigger button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowKeyModal(true)}
+                className="inline-flex items-center gap-1.5 text-xs text-[#7D7569] hover:text-[#F5EFE6] bg-[#171513] hover:bg-[#26231F] border border-[#2E2A24] px-3.5 py-2 rounded-xl transition-colors cursor-pointer"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-[#A89F91]" />
+                <span>
+                  Gemini API Key:{' '}
+                  <strong className="text-[#F5EFE6]">
+                    {customApiKey ? 'Custom key active' : 'Server default'}
+                  </strong>
+                </span>
+                <span className="text-xs text-[#A89F91] font-medium underline ml-1">Configure</span>
               </button>
             </div>
           </div>
@@ -402,19 +422,19 @@ export function ReceiptCapture() {
             {/* Image Preview & Pre-processing Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-medium text-[#78716C]">
+                <div className="flex items-center justify-between text-xs font-medium text-[#7D7569]">
                   <span>Receipt Preview</span>
                   <button
                     onClick={() => {
                       setRawImageSrc(null);
                       setProcessedImageSrc(null);
                     }}
-                    className="text-[#C53030] hover:underline cursor-pointer"
+                    className="text-[#E05353] hover:underline cursor-pointer"
                   >
                     Remove &amp; Retake
                   </button>
                 </div>
-                <div className="relative aspect-3/4 max-h-80 w-full bg-[#FAF7F2] rounded-xl overflow-hidden border border-[#E5DDCF] flex items-center justify-center p-2">
+                <div className="relative aspect-3/4 max-h-80 w-full bg-[#171513] rounded-xl overflow-hidden border border-[#2E2A24] flex items-center justify-center p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={processedImageSrc || rawImageSrc}
@@ -424,14 +444,24 @@ export function ReceiptCapture() {
                 </div>
               </div>
 
-              {/* Preprocessing & Mode Selection */}
+              {/* Processing & Mode Selection */}
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                    <Sparkles className="w-3 h-3 text-amber-600 fill-amber-500" />
-                    Recommended
-                  </span>
-                  <p className="text-xs text-[#78716C] leading-relaxed pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#D4A373] bg-[#2E2419] border border-[#D4A373]/30 px-2 py-0.5 rounded">
+                      <Sparkles className="w-3 h-3 text-[#D4A373]" />
+                      Recommended
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowKeyModal(true)}
+                      className="inline-flex items-center gap-1 text-xs text-[#A89F91] hover:text-[#F5EFE6] hover:underline cursor-pointer"
+                    >
+                      <KeyRound className="w-3 h-3" />
+                      {customApiKey ? 'Custom key active' : 'API Key Settings'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#A89F91] leading-relaxed pt-1">
                     Best for wrinkled receipts, dim lighting, and automatic tax breakdowns.
                   </p>
                 </div>
@@ -440,7 +470,7 @@ export function ReceiptCapture() {
                 <button
                   onClick={handleStartAI}
                   disabled={isProcessing}
-                  className="w-full inline-flex items-center justify-center gap-2 bg-[#1C1917] text-white py-3.5 px-4 rounded-xl text-sm font-semibold hover:bg-[#332E2B] active:scale-98 transition-all disabled:opacity-60 cursor-pointer shadow-sm"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#F5EFE6] text-[#121110] py-3.5 px-4 rounded-xl text-sm font-semibold hover:bg-[#E6DDD0] active:scale-98 transition-all disabled:opacity-60 cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
                 >
                   {isProcessing && processingMode === 'ai' ? (
                     <>
@@ -449,164 +479,171 @@ export function ReceiptCapture() {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400" />
+                      <Sparkles className="w-4 h-4 text-[#8C6D3F] fill-[#8C6D3F]" />
                       <span>Scan with AI</span>
                     </>
                   )}
                 </button>
 
-                <div className="relative flex py-1 items-center">
-                  <div className="flex-grow border-t border-[#E5DDCF]" />
-                  <span className="flex-shrink mx-3 text-xs text-[#78716C] font-mono uppercase tracking-wider">
-                    Or alternative methods
-                  </span>
-                  <div className="flex-grow border-t border-[#E5DDCF]" />
-                </div>
-
-                {/* Secondary Action: Local OCR */}
-                <div className="flex items-center gap-2">
+                {/* Progressive Disclosure: Offline OCR & Manual Options */}
+                <div className="pt-1">
                   <button
-                    onClick={handleStartOCR}
-                    disabled={isProcessing}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#D9CDB8] text-[#1C1917] py-2.5 px-3 rounded-xl text-xs font-semibold hover:bg-[#FAF7F2] active:scale-98 transition-all disabled:opacity-60 cursor-pointer"
+                    type="button"
+                    onClick={() => setShowOfflineOptions(!showOfflineOptions)}
+                    className="w-full flex items-center justify-between text-xs text-[#A89F91] hover:text-[#F5EFE6] bg-[#171513] hover:bg-[#26231F] border border-[#2E2A24] px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer"
                   >
-                    {isProcessing && processingMode === 'ocr' ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>OCR Running...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Cpu className="w-3.5 h-3.5 text-[#78716C]" />
-                        <span>Run Local OCR (Offline)</span>
-                      </>
-                    )}
+                    <span className="font-medium flex items-center gap-2">
+                      <Cpu className="w-3.5 h-3.5 text-[#A89F91]" />
+                      Offline OCR &amp; Manual Options
+                    </span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-[#A89F91] transition-transform ${showOfflineOptions ? 'rotate-180' : ''}`} />
                   </button>
 
-                  <button
-                    onClick={() => setShowPreprocessControls(!showPreprocessControls)}
-                    className="p-2.5 rounded-xl border border-[#D9CDB8] text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAF7F2] transition-colors cursor-pointer"
-                    title="Fine tune image contrast for local OCR"
-                  >
-                    <Sliders className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {showPreprocessControls && (
-                  <div className="space-y-3 bg-[#FAF7F2] p-4 rounded-xl border border-[#E5DDCF] text-xs">
-                    <div className="flex items-center justify-between font-semibold text-[#1C1917]">
-                      <span>Local OCR Tuning</span>
-                      <button
-                        onClick={() => setShowPreprocessControls(false)}
-                        className="text-[#78716C] hover:underline"
-                      >
-                        Close
-                      </button>
-                    </div>
-
-                    <label className="flex items-center justify-between cursor-pointer">
-                      <span className="font-medium text-[#1C1917]">Grayscale Filter</span>
-                      <input
-                        type="checkbox"
-                        checked={grayscale}
-                        onChange={(e) =>
-                          handleControlChange(
-                            e.target.checked,
-                            contrast,
-                            useThreshold,
-                            threshold
-                          )
-                        }
-                        className="rounded border-[#D9CDB8] text-[#1C1917] focus:ring-[#1C1917]"
-                      />
-                    </label>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between font-medium text-[#1C1917]">
-                        <span>Contrast Boost</span>
-                        <span className="font-mono text-[#78716C]">+{contrast}%</span>
+                  {showOfflineOptions && (
+                    <div className="mt-2.5 space-y-3 p-3.5 bg-[#171513] rounded-xl border border-[#2E2A24] text-xs animate-fadeIn">
+                      <div className="flex flex-col sm:flex-row items-stretch gap-2">
+                        <button
+                          type="button"
+                          onClick={handleStartOCR}
+                          disabled={isProcessing}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#1C1A17] border border-[#3D372F] hover:border-[#F5EFE6] text-[#F5EFE6] py-2.5 px-3 rounded-lg font-medium cursor-pointer shadow-2xs transition-colors"
+                        >
+                          {isProcessing && processingMode === 'ocr' ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Running OCR...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Cpu className="w-3.5 h-3.5 text-[#A89F91]" />
+                              <span>Run Local OCR (Offline)</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowPasteModal(true)}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#1C1A17] border border-[#3D372F] hover:border-[#F5EFE6] text-[#F5EFE6] py-2.5 px-3 rounded-lg font-medium cursor-pointer shadow-2xs transition-colors"
+                        >
+                          <ClipboardPaste className="w-3.5 h-3.5 text-[#A89F91]" />
+                          <span>Paste Text Lines</span>
+                        </button>
                       </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="60"
-                        value={contrast}
-                        onChange={(e) =>
-                          handleControlChange(
-                            grayscale,
-                            parseInt(e.target.value, 10),
-                            useThreshold,
-                            threshold
-                          )
-                        }
-                        className="w-full accent-[#1C1917]"
-                      />
-                    </div>
 
-                    <div className="space-y-2 pt-1 border-t border-[#E5DDCF]">
-                      <label className="flex items-center justify-between cursor-pointer">
-                        <span className="font-medium text-[#1C1917]">
-                          Thermal Ink Binarization
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={useThreshold}
-                          onChange={(e) =>
-                            handleControlChange(
-                              grayscale,
-                              contrast,
-                              e.target.checked,
-                              threshold
-                            )
-                          }
-                          className="rounded border-[#D9CDB8] text-[#1C1917] focus:ring-[#1C1917]"
-                        />
-                      </label>
-                      {useThreshold && (
-                        <input
-                          type="range"
-                          min="80"
-                          max="200"
-                          value={threshold}
-                          onChange={(e) =>
-                            handleControlChange(
-                              grayscale,
-                              contrast,
-                              useThreshold,
-                              parseInt(e.target.value, 10)
-                            )
-                          }
-                          className="w-full accent-[#1C1917]"
-                        />
-                      )}
-                    </div>
-                  </div>
-                )}
+                      {/* Image Contrast & Preprocessing Controls */}
+                      <div className="pt-2 border-t border-[#2E2A24] space-y-2.5">
+                        <div className="flex items-center justify-between text-xs font-semibold text-[#F5EFE6]">
+                          <span>Image Tuning (For faint paper prints)</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowPreprocessControls(!showPreprocessControls)}
+                            className="text-[#A89F91] hover:underline flex items-center gap-1"
+                          >
+                            <Sliders className="w-3.5 h-3.5" />
+                            {showPreprocessControls ? 'Hide Sliders' : 'Adjust'}
+                          </button>
+                        </div>
 
-                <button
-                  type="button"
-                  onClick={() => setShowPasteModal(true)}
-                  className="w-full inline-flex items-center justify-center gap-1.5 py-1 text-xs font-medium text-[#57534E] hover:text-[#1C1917] hover:underline cursor-pointer"
-                >
-                  <ClipboardPaste className="w-3.5 h-3.5" />
-                  <span>Or Paste / Edit Receipt Text Manually</span>
-                </button>
+                        {showPreprocessControls && (
+                          <div className="space-y-3 pt-1">
+                            <label className="flex items-center justify-between cursor-pointer">
+                              <span className="font-medium text-[#F5EFE6]">Grayscale Filter</span>
+                              <input
+                                type="checkbox"
+                                checked={grayscale}
+                                onChange={(e) =>
+                                  handleControlChange(
+                                    e.target.checked,
+                                    contrast,
+                                    useThreshold,
+                                    threshold
+                                  )
+                                }
+                                className="rounded border-[#3D372F] bg-[#1C1A17] text-[#F5EFE6] focus:ring-[#F5EFE6]"
+                              />
+                            </label>
+
+                            <div className="space-y-1">
+                              <div className="flex justify-between font-medium text-[#F5EFE6]">
+                                <span>Contrast Boost</span>
+                                <span className="font-mono text-[#A89F91]">+{contrast}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="60"
+                                value={contrast}
+                                onChange={(e) =>
+                                  handleControlChange(
+                                    grayscale,
+                                    parseInt(e.target.value, 10),
+                                    useThreshold,
+                                    threshold
+                                  )
+                                }
+                                className="w-full accent-[#F5EFE6]"
+                              />
+                            </div>
+
+                            <div className="space-y-2 pt-1 border-t border-[#2E2A24]">
+                              <label className="flex items-center justify-between cursor-pointer">
+                                <span className="font-medium text-[#F5EFE6]">
+                                  High-Contrast Ink Binarization
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={useThreshold}
+                                  onChange={(e) =>
+                                    handleControlChange(
+                                      grayscale,
+                                      contrast,
+                                      e.target.checked,
+                                      threshold
+                                    )
+                                  }
+                                  className="rounded border-[#3D372F] bg-[#1C1A17] text-[#F5EFE6] focus:ring-[#F5EFE6]"
+                                />
+                              </label>
+                              {useThreshold && (
+                                <input
+                                  type="range"
+                                  min="80"
+                                  max="200"
+                                  value={threshold}
+                                  onChange={(e) =>
+                                    handleControlChange(
+                                      grayscale,
+                                      contrast,
+                                      useThreshold,
+                                      parseInt(e.target.value, 10)
+                                    )
+                                  }
+                                  className="w-full accent-[#F5EFE6]"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Progress / Status feedback */}
             {isProcessing && (
-              <div className="space-y-2 bg-[#FAF7F2] p-4 rounded-xl border border-[#E5DDCF]">
+              <div className="space-y-2 bg-[#171513] p-4 rounded-xl border border-[#2E2A24]">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-[#1C1917] font-medium flex items-center gap-2">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1C1917]" />
+                  <span className="text-[#F5EFE6] font-medium flex items-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#F5EFE6]" />
                     {ocrStage}
                   </span>
-                  <span className="text-[#78716C]">{ocrProgress}%</span>
+                  <span className="text-[#7D7569]">{ocrProgress}%</span>
                 </div>
-                <div className="w-full bg-[#E5DDCF] h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-[#2E2A24] h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#1C1917] h-full transition-all duration-300 rounded-full"
+                    className="bg-[#F5EFE6] h-full transition-all duration-300 rounded-full"
                     style={{ width: `${ocrProgress}%` }}
                   />
                 </div>
@@ -614,34 +651,43 @@ export function ReceiptCapture() {
             )}
 
             {errorMsg && (
-              <div className="p-4 rounded-xl bg-[#FAF7F2] border border-[#C53030]/30 text-xs text-[#1C1917] space-y-3">
+              <div className="p-4 rounded-xl bg-[#201414] border border-[#E05353]/30 text-xs text-[#F5EFE6] space-y-3">
                 <div className="flex items-start gap-2">
-                  <span className="text-[#C53030] font-bold">Error:</span>
+                  <span className="text-[#E05353] font-bold">Error:</span>
                   <div>{errorMsg}</div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 pt-1">
                   <button
                     onClick={handleStartAI}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#1C1917] hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#F5EFE6] hover:underline cursor-pointer"
                   >
                     <Zap className="w-3.5 h-3.5" />
                     Retry AI Scan
                   </button>
-                  <span className="text-[#D9CDB8]">•</span>
+                  <span className="text-[#3D372F]">•</span>
                   <button
                     onClick={handleStartOCR}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#57534E] hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#A89F91] hover:underline cursor-pointer"
                   >
                     <Cpu className="w-3.5 h-3.5" />
                     Try Local OCR
                   </button>
-                  <span className="text-[#D9CDB8]">•</span>
+                  <span className="text-[#3D372F]">•</span>
                   <button
                     onClick={() => setShowPasteModal(true)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#57534E] hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#A89F91] hover:underline cursor-pointer"
                   >
                     <FileText className="w-3.5 h-3.5" />
                     Paste Text Manually
+                  </button>
+                  <span className="text-[#3D372F]">•</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyModal(true)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#A89F91] hover:text-[#F5EFE6] hover:underline cursor-pointer"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    Custom API Key
                   </button>
                 </div>
               </div>
@@ -652,25 +698,25 @@ export function ReceiptCapture() {
 
       {/* API Key Modal */}
       {showKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-[#E5DDCF] shadow-xl overflow-hidden flex flex-col">
-            <div className="px-5 py-4 border-b border-[#E5DDCF] flex items-center justify-between bg-[#FAF7F2]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs">
+          <div className="bg-[#1C1A17] rounded-2xl max-w-md w-full border border-[#2E2A24] shadow-xl overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-[#2E2A24] flex items-center justify-between bg-[#171513]">
               <div className="flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-[#1C1917]" />
-                <h3 className="text-base font-bold text-[#1C1917] font-serif">
+                <KeyRound className="w-4 h-4 text-[#F5EFE6]" />
+                <h3 className="text-base font-bold text-[#F5EFE6] font-serif">
                   Gemini API Key Settings
                 </h3>
               </div>
               <button
                 onClick={() => setShowKeyModal(false)}
-                className="text-[#78716C] hover:text-[#1C1917] p-1 rounded-lg cursor-pointer"
+                className="text-[#7D7569] hover:text-[#F5EFE6] p-1 rounded-lg cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="p-5 space-y-4">
-              <div className="space-y-1.5 text-xs text-[#57534E]">
+              <div className="space-y-1.5 text-xs text-[#A89F91]">
                 <p>
                   By default, AsingAsing uses the server-configured Gemini API key.
                 </p>
@@ -680,16 +726,16 @@ export function ReceiptCapture() {
                     href="https://aistudio.google.com/app/apikey"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#1C1917] font-semibold underline"
+                    className="text-[#F5EFE6] font-semibold underline"
                   >
                     Google AI Studio
                   </a>
-                  . It is stored solely on your device in <code className="bg-[#FAF7F2] px-1 py-0.5 rounded">localStorage</code>.
+                  . It is stored solely on your device in <code className="bg-[#26231F] text-[#F5EFE6] px-1 py-0.5 rounded">localStorage</code>.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-[#1C1917] block">
+                <label className="text-xs font-semibold text-[#F5EFE6] block">
                   Custom Gemini API Key
                 </label>
                 <input
@@ -697,13 +743,13 @@ export function ReceiptCapture() {
                   value={customApiKey}
                   onChange={(e) => setCustomApiKey(e.target.value)}
                   placeholder="Leave empty to use server default key"
-                  className="w-full bg-[#FAF7F2] border border-[#D9CDB8] rounded-xl px-3 py-2.5 text-xs font-mono text-[#1C1917] placeholder:text-[#A8A29E] focus:bg-white focus:border-[#1C1917] outline-none"
+                  className="w-full bg-[#171513] border border-[#3D372F] rounded-xl px-3 py-2.5 text-xs font-mono text-[#F5EFE6] placeholder:text-[#7D7569] focus:bg-[#121110] focus:border-[#F5EFE6] outline-none"
                 />
               </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-[#E5DDCF]">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <p className="text-xs text-[#78716C]">
+              <div className="flex items-center gap-2 pt-2 border-t border-[#2E2A24]">
+                <ShieldCheck className="w-4 h-4 text-[#2ECC71] shrink-0" />
+                <p className="text-xs text-[#A89F91]">
                   Free tier: 1,500 scans/day. No credit card required.
                 </p>
               </div>
@@ -712,14 +758,14 @@ export function ReceiptCapture() {
                 <button
                   type="button"
                   onClick={() => setShowKeyModal(false)}
-                  className="px-3.5 py-2 rounded-xl border border-[#D9CDB8] text-xs font-medium text-[#57534E] hover:bg-[#FAF7F2] cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl border border-[#3D372F] text-xs font-medium text-[#A89F91] hover:bg-[#26231F] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSaveApiKey(customApiKey)}
-                  className="px-4 py-2 rounded-xl bg-[#1C1917] text-white text-xs font-semibold hover:bg-[#332E2B] cursor-pointer shadow-xs"
+                  className="px-4 py-2 rounded-xl bg-[#F5EFE6] text-[#121110] text-xs font-semibold hover:bg-[#E6DDD0] cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
                 >
                   Save Settings
                 </button>
@@ -731,20 +777,20 @@ export function ReceiptCapture() {
 
       {/* Paste / Manual Text Modal */}
       {showPasteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-lg w-full border border-[#E5DDCF] shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-5 py-4 border-b border-[#E5DDCF] flex items-center justify-between bg-[#FAF7F2]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs">
+          <div className="bg-[#1C1A17] rounded-2xl max-w-lg w-full border border-[#2E2A24] shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-5 py-4 border-b border-[#2E2A24] flex items-center justify-between bg-[#171513]">
               <div>
-                <h3 className="text-base font-bold text-[#1C1917] font-serif">
+                <h3 className="text-base font-bold text-[#F5EFE6] font-serif">
                   Paste or Edit Receipt Text
                 </h3>
-                <p className="text-xs text-[#78716C]">
+                <p className="text-xs text-[#7D7569]">
                   Paste text lines from SMS, e-receipt, or WhatsApp. We will parse quantities, items, and taxes automatically.
                 </p>
               </div>
               <button
                 onClick={() => setShowPasteModal(false)}
-                className="text-[#78716C] hover:text-[#1C1917] p-1 rounded-lg cursor-pointer"
+                className="text-[#7D7569] hover:text-[#F5EFE6] p-1 rounded-lg cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -756,21 +802,21 @@ export function ReceiptCapture() {
                 onChange={(e) => setManualText(e.target.value)}
                 placeholder="Paste receipt lines here..."
                 rows={10}
-                className="w-full bg-[#FAF7F2] border border-[#D9CDB8] rounded-xl p-3 text-xs font-mono text-[#1C1917] placeholder:text-[#A8A29E] focus:bg-white focus:border-[#1C1917] outline-none leading-relaxed"
+                className="w-full bg-[#171513] border border-[#3D372F] rounded-xl p-3 text-xs font-mono text-[#F5EFE6] placeholder:text-[#7D7569] focus:bg-[#121110] focus:border-[#F5EFE6] outline-none leading-relaxed"
               />
 
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowPasteModal(false)}
-                  className="px-3.5 py-2 rounded-xl border border-[#D9CDB8] text-xs font-medium text-[#57534E] hover:bg-[#FAF7F2] cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl border border-[#3D372F] text-xs font-medium text-[#A89F91] hover:bg-[#26231F] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleParseManualText}
-                  className="px-4 py-2 rounded-xl bg-[#1C1917] text-white text-xs font-semibold hover:bg-[#332E2B] cursor-pointer shadow-xs"
+                  className="px-4 py-2 rounded-xl bg-[#F5EFE6] text-[#121110] text-xs font-semibold hover:bg-[#E6DDD0] cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5EFE6]"
                 >
                   Parse Lines into Table
                 </button>
