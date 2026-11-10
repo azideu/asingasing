@@ -175,7 +175,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. API Key Resolution and Sanity Validation
-    const resolvedApiKey = (hasCustomKey ? (clientApiKey as string).trim() : '') || process.env.GEMINI_API_KEY;
+    const rawApiKey = (hasCustomKey ? (clientApiKey as string).trim() : '') || process.env.GEMINI_API_KEY || '';
+    const resolvedApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '').trim();
+
     if (!resolvedApiKey) {
       return NextResponse.json(
         { error: 'Gemini API key is required. Please set GEMINI_API_KEY or provide a key in settings.' },
@@ -183,8 +185,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Google API keys contain alphanumeric, dashes, and underscores (typically 20-100 chars)
-    if (!/^[a-zA-Z0-9_\-]{10,128}$/.test(resolvedApiKey)) {
+    // Google API keys contain alphanumeric, dots, dashes, and underscores (typically AIzaSy... or AQ.Ab8...)
+    if (!/^[a-zA-Z0-9_.\-]{10,256}$/.test(resolvedApiKey)) {
       return NextResponse.json(
         { error: 'Invalid Gemini API key format.' },
         { status: 400 }
